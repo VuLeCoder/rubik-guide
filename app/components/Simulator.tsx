@@ -1,7 +1,21 @@
 "use client";
 import React, { useState, useCallback, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame, RootState } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+import * as THREE from 'three';
+
+interface CubieData {
+  id: number;
+  pos: THREE.Vector3;
+  stickers: string[];
+}
+
+interface AnimatingLayer {
+  axis: 'x' | 'y' | 'z';
+  layer: number;
+  angle: number;
+  target: number;
+}
 
 const COLORS = {
   top: '#FFFFFF',
@@ -13,18 +27,18 @@ const COLORS = {
   inner: '#1E293B'
 };
 
-const generateInitialState = () => {
+const generateInitialState = (): CubieData[] => {
   return Array.from({ length: 27 }).map((_, i) => {
     const x = (i % 3) - 1;
     const y = Math.floor((i / 3) % 3) - 1;
     const z = Math.floor(i / 9) - 1;
     return {
       id: i,
-      pos: [x, y, z] as [number, number, number],
+      pos: new THREE.Vector3(x, y, z),
       stickers: [
         x === 1 ? COLORS.right : COLORS.inner,
         x === -1 ? COLORS.left : COLORS.inner,
-        y === 1 ? COLORS.top : COLORS.inner, 
+        y === 1 ? COLORS.top : COLORS.inner,
         y === -1 ? COLORS.bottom : COLORS.inner,
         z === 1 ? COLORS.front : COLORS.inner,
         z === -1 ? COLORS.back : COLORS.inner,
@@ -33,7 +47,7 @@ const generateInitialState = () => {
   });
 };
 
-function Cubie({ stickers, position }: { stickers: string[], position: [number, number, number] }) {
+function Cubie({ stickers, position }: { stickers: string[], position: THREE.Vector3 }) {
   return (
     <mesh position={position}>
       <boxGeometry args={[0.92, 0.92, 0.92]} />
@@ -42,88 +56,148 @@ function Cubie({ stickers, position }: { stickers: string[], position: [number, 
           key={i} 
           attach={`material-${i}`} 
           color={col} 
-          roughness={0.05}
-          metalness={0.1}
+          roughness={0.05} 
+          metalness={0.1} 
         />
       ))}
     </mesh>
   );
 }
 
+// Xử lý Animation
+function RubikCube({ cubies, activeMove, onAnimationEnd }: { 
+  cubies: CubieData[], 
+  activeMove: AnimatingLayer | null,
+  onAnimationEnd: (axis: 'x' | 'y' | 'z', layer: number, target: number) => void 
+}) {
+  const rotationGroupRef = useRef<THREE.Group>(null);
+  const rotationAngleRef = useRef(0);
+
+  useFrame((_state: RootState, delta: number) => {
+    if (activeMove && rotationGroupRef.current) {
+      // tốc độ xoay
+      const step = (Math.PI / 2) * (delta / 0.4);
+      
+      if (Math.abs(rotationAngleRef.current) < Math.abs(activeMove.target)) {
+        rotationAngleRef.current += (activeMove.target > 0 ? step : -step);
+        
+        if (Math.abs(rotationAngleRef.current) >= Math.abs(activeMove.target)) {
+          onAnimationEnd(activeMove.axis, activeMove.layer, activeMove.target);
+          rotationAngleRef.current = 0;
+          rotationGroupRef.current.rotation.set(0, 0, 0);
+        } else {
+          const axis = activeMove.axis;
+          if (axis === 'x') rotationGroupRef.current.rotation.x = rotationAngleRef.current;
+          if (axis === 'y') rotationGroupRef.current.rotation.y = rotationAngleRef.current;
+          if (axis === 'z') rotationGroupRef.current.rotation.z = rotationAngleRef.current;
+        }
+      }
+    }
+  });
+
+  return (
+    <group>
+      {cubies.filter(c => {
+        if (!activeMove) return true;
+        const val = activeMove.axis === 'x' ? c.pos.x : activeMove.axis === 'y' ? c.pos.y : c.pos.z;
+        return Math.abs(val - activeMove.layer) > 0.1;
+      }).map(data => (
+        <Cubie key={data.id} stickers={data.stickers} position={data.pos} />
+      ))}
+
+      <group ref={rotationGroupRef}>
+        {cubies.filter(c => {
+          if (!activeMove) return false;
+          const val = activeMove.axis === 'x' ? c.pos.x : activeMove.axis === 'y' ? c.pos.y : c.pos.z;
+          return Math.abs(val - activeMove.layer) <= 0.1;
+        }).map(data => (
+          <Cubie key={data.id} stickers={data.stickers} position={data.pos} />
+        ))}
+      </group>
+    </group>
+  );
+}
+
 export default function Simulator() {
-  const [cubies, setCubies] = useState(generateInitialState());
+  const [cubies, setCubies] = useState<CubieData[]>(generateInitialState());
   const [history, setHistory] = useState<string[]>([]);
-  const isRotating = useRef(false);
+  const [activeMove, setActiveMove] = useState<AnimatingLayer | null>(null);
+  const isTransitioning = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const rotateLogic = useCallback((axis: 'x' | 'y' | 'z', layer: number, clockwise: boolean) => {
-    if (isRotating.current) return;
-    isRotating.current = true;
+  const finalizeMove = useCallback((axis: 'x' | 'y' | 'z', layer: number, targetAngle: number) => {
+    setCubies(prev => prev.map(cubie => {
+      const val = axis === 'x' ? cubie.pos.x : axis === 'y' ? cubie.pos.y : cubie.pos.z;
+      if (Math.abs(val - layer) > 0.1) return cubie;
 
-    setCubies(prev => {
-      return prev.map(c => {
-        const [x, y, z] = c.pos;
-        const val = axis === 'x' ? x : axis === 'y' ? y : z;
-        if (Math.abs(val - layer) > 0.1) return c;
-        let [nx, ny, nz] = [x, y, z];
-        let s = [...c.stickers];
-        if (axis === 'x') {
-          ny = clockwise ? -z : z; nz = clockwise ? y : -y;
-          s = clockwise ? [s[0], s[1], s[5], s[4], s[2], s[3]] : [s[0], s[1], s[4], s[5], s[3], s[2]];
-        } else if (axis === 'y') {
-          nx = clockwise ? z : -z; nz = clockwise ? -x : x;
-          s = clockwise ? [s[4], s[5], s[2], s[3], s[1], s[0]] : [s[5], s[4], s[2], s[3], s[0], s[1]];
-        } else if (axis === 'z') {
-          nx = clockwise ? -y : y; ny = clockwise ? x : -x;
-          s = clockwise ? [s[3], s[2], s[0], s[1], s[4], s[5]] : [s[2], s[3], s[1], s[0], s[4], s[5]];
-        }
-        return { ...c, pos: [nx, ny, nz], stickers: s };
-      });
-    });
-    setTimeout(() => { isRotating.current = false; }, 200);
+      const rotationAxis = new THREE.Vector3(axis === 'x' ? 1 : 0, axis === 'y' ? 1 : 0, axis === 'z' ? 1 : 0);
+      const newPos = cubie.pos.clone().applyAxisAngle(rotationAxis, targetAngle);
+      newPos.x = Math.round(newPos.x);
+      newPos.y = Math.round(newPos.y);
+      newPos.z = Math.round(newPos.z);
+
+      let s = [...cubie.stickers];
+      const isClockwise = targetAngle < 0;
+      if (axis === 'x') {
+        s = isClockwise ? [s[0], s[1], s[4], s[5], s[3], s[2]] : [s[0], s[1], s[5], s[4], s[2], s[3]];
+      } else if (axis === 'y') {
+        s = isClockwise ? [s[5], s[4], s[2], s[3], s[0], s[1]] : [s[4], s[5], s[2], s[3], s[1], s[0]];
+      } else if (axis === 'z') {
+        s = isClockwise ? [s[2], s[3], s[1], s[0], s[4], s[5]] : [s[3], s[2], s[0], s[1], s[4], s[5]];
+      }
+      return { ...cubie, pos: newPos, stickers: s };
+    }));
+
+    setActiveMove(null);
+    isTransitioning.current = false;
   }, []);
 
   const handleMove = (move: string) => {
-    if (isRotating.current) return;
+    if (isTransitioning.current) return;
+    isTransitioning.current = true;
     setHistory(prev => [...prev, move]);
-    setTimeout(() => {
-      if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }, 50);
 
     const isPrime = move.includes("'");
     const m = move.replace("'", "");
+    let axis: 'x' | 'y' | 'z' = 'x';
+    let layer = 0;
+    let target = Math.PI / 2;
+
     if (["R", "L", "M"].includes(m)) {
-      rotateLogic('x', m === "R" ? 1 : m === "L" ? -1 : 0, (m === "L" || m === "M") ? isPrime : !isPrime);
+      axis = 'x';
+      layer = m === "R" ? 1 : m === "L" ? -1 : 0;
+      target *= (m === "R") ? -1 : 1;
     } else if (["U", "D", "E"].includes(m)) {
-      rotateLogic('y', m === "U" ? 1 : m === "D" ? -1 : 0, (m === "D" || m === "E") ? isPrime : !isPrime);
+      axis = 'y';
+      layer = m === "U" ? 1 : m === "D" ? -1 : 0;
+      target *= (m === "U") ? -1 : 1;
     } else if (["F", "B", "S"].includes(m)) {
-      rotateLogic('z', m === "F" ? 1 : m === "B" ? -1 : 0, (m === "B") ? isPrime : !isPrime);
+      axis = 'z';
+      layer = m === "F" ? 1 : m === "B" ? -1 : 0;
+      target *= (m === "F") ? -1 : 1;
     }
+
+    if (isPrime) target *= -1;
+    setActiveMove({ axis, layer, angle: 0, target });
+
+    setTimeout(() => {
+      if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }, 50);
   };
 
   return (
     <div className="h-auto p-2 lg:p-4 flex items-center justify-center font-sans overflow-hidden">
       <div className="w-full max-w-6xl grid lg:grid-cols-12 gap-4 items-center">
-        
-        {/* Left Panel: History (HIDDEN ON MOBILE) */}
         <div className="hidden lg:flex lg:col-span-3 flex-col gap-3">
           <div className="bg-[#1f2a44] rounded-[24px] p-5 border border-slate-200 shadow-sm overflow-hidden">
             <h3 className="text-[14px] font-black text-slate-400 mb-3 uppercase tracking-widest">History Log</h3>
-            
-            <div 
-              ref={scrollRef}
-              className="h-[180px] overflow-y-auto pr-1 custom-scrollbar"
-            >
+            <div ref={scrollRef} className="h-[180px] overflow-y-auto pr-1 custom-scrollbar">
               <div className="grid grid-cols-3 gap-1.5">
                 {history.map((m, i) => (
-                  <div 
-                    key={i} 
-                    className="h-10 flex items-center justify-center rounded-lg font-mono text-sm font-bold bg-slate-800 border border-slate-600 text-yellow-400 shadow-inner animate-in fade-in zoom-in"
-                  >
+                  <div key={i} className="h-10 flex items-center justify-center rounded-lg font-mono text-sm font-bold bg-slate-800 border border-slate-600 text-yellow-400 shadow-inner">
                     {m}
                   </div>
                 ))}
-
                 {history.length === 0 && (
                   <div className="col-span-3 h-10 flex items-center justify-center text-sm text-slate-500 italic border border-dashed border-slate-700 rounded-lg">
                     No moves
@@ -131,7 +205,6 @@ export default function Simulator() {
                 )}
               </div>
             </div>
-
             <button 
               onClick={() => {setCubies(generateInitialState()); setHistory([]);}} 
               className="mt-4 w-full bg-slate-200 hover:bg-red-500 hover:text-white text-slate-600 py-3 rounded-xl text-[14px] font-black uppercase tracking-widest transition-all active:scale-95"
@@ -140,26 +213,17 @@ export default function Simulator() {
             </button>
           </div>
         </div>
-
-        {/* Center: Canvas */}
+        
         <div className="col-span-12 lg:col-span-5 h-[400px] lg:h-[500px] bg-[#1f2a44] rounded-[32px] relative overflow-hidden border border-slate-200 shadow-inner">
           <Canvas camera={{ position: [5, 5, 5], fov: 55 }}>
             <Environment preset="city" />
             <ambientLight intensity={0.5} />
-            <group>
-              {cubies.map((data) => (
-                <Cubie key={data.id} stickers={data.stickers} position={data.pos} />
-              ))}
-            </group>
+            <RubikCube cubies={cubies} activeMove={activeMove} onAnimationEnd={finalizeMove} />
             <OrbitControls enablePan={false} makeDefault />
             <ContactShadows position={[0, -2.2, 0]} opacity={0.1} scale={10} blur={3} />
           </Canvas>
-          {/* <div className="absolute top-4 left-4 bg-slate-800/80 border border-slate-100 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest text-slate-400">
-            Simulator
-          </div> */}
         </div>
 
-        {/* Right: Controls */}
         <div className="col-span-12 lg:col-span-4 bg-[#1f2a44] rounded-[32px] p-6 border border-slate-200 shadow-sm">
           <div className="mb-6">
             <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Face Moves</p>
@@ -172,7 +236,6 @@ export default function Simulator() {
                 >
                   {m}
                 </button>
-              
               ))}
             </div>
           </div>
