@@ -1,65 +1,108 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState } from 'react';
+import { Menu, X, Box, BookOpen, Timer as TimerIcon } from 'lucide-react';
+
+import Learn from './components/Learn'; 
+import Timer from './components/Timer';
+import Simulator from './components/Simulator';
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState('learn');
+  const [isOpen, setIsOpen] = useState(false);
+
+  const navItems = [
+    { id: 'simulator', name: 'Simulator', icon: <Box size={18} /> },
+    { id: 'learn', name: 'Learn', icon: <BookOpen size={18} /> },
+    { id: 'timer', name: 'Timer', icon: <TimerIcon size={18} /> },
+  ];
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'simulator':
+        return <Simulator />;
+      case 'timer':
+        return <Timer />;
+      case 'learn':
+      default:
+        return <Learn />;
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-[#FFFBF0] text-slate-900 font-sans">
+      {/* NAVIGATION BAR */}
+      <nav className="bg-[#FFFBF0] border-b border-slate-300 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="shrink-0 flex items-center">
+              <img src="logo_rubik.jpg" alt="RubikCommunity Logo" className="h-12 w-auto" />
+            </div>
+
+            {/* Desktop Menu */}
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-baseline space-x-4">
+                {navItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${
+                      activeTab === item.id 
+                        ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30' 
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
+                    }`}
+                  >
+                    {item.icon}
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Button */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="inline-flex items-center justify-center p-2 rounded-md text-slate-600 hover:text-slate-950 hover:bg-slate-100 focus:outline-none"
+              >
+                {isOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Mobile Menu */}
+        {isOpen && (
+          <div className="md:hidden bg-[#FFFBF0] border-b border-slate-300 px-2 pt-2 pb-3 space-y-1 shadow-lg">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setIsOpen(false);
+                }}
+                className={`flex w-full items-center gap-3 px-3 py-4 rounded-md text-base font-bold transition-colors ${
+                  activeTab === item.id ? 'bg-amber-400 text-slate-950' : 'text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                {item.icon}
+                {item.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </nav>
+
+      <main className="max-w-5xl mx-auto p-6 md:p-10">
+        <div className="transition-all duration-500">
+          {renderContent()}
         </div>
       </main>
+
+      <footer className="text-center py-10 border-t border-slate-300 text-slate-600 text-xs font-medium">
+        © 2026 RubikCommunity • Connecting Cubes, Building Community
+      </footer>
     </div>
   );
 }
