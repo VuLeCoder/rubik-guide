@@ -83,8 +83,14 @@ function RubikCube({ cubies, activeMove, onAnimationEnd }: {
         
         if (Math.abs(rotationAngleRef.current) >= Math.abs(activeMove.target)) {
           onAnimationEnd(activeMove.axis, activeMove.layer, activeMove.target);
-          rotationAngleRef.current = 0;
-          rotationGroupRef.current.rotation.set(0, 0, 0);
+
+          requestAnimationFrame(() => {
+            rotationAngleRef.current = 0;
+            if (rotationGroupRef.current) {
+              rotationGroupRef.current.rotation.set(0, 0, 0);
+            }
+          });
+          
         } else {
           const axis = activeMove.axis;
           if (axis === 'x') rotationGroupRef.current.rotation.x = rotationAngleRef.current;
