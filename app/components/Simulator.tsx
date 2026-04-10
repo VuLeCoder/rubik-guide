@@ -3,6 +3,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { Canvas, useFrame, RootState } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
+import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 interface CubieData {
   id: number;
@@ -90,7 +91,7 @@ function RubikCube({ cubies, activeMove, onAnimationEnd }: {
               rotationGroupRef.current.rotation.set(0, 0, 0);
             }
           });
-          
+
         } else {
           const axis = activeMove.axis;
           if (axis === 'x') rotationGroupRef.current.rotation.x = rotationAngleRef.current;
@@ -130,6 +131,7 @@ export default function Simulator() {
   const [activeMove, setActiveMove] = useState<AnimatingLayer | null>(null);
   const isTransitioning = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const controlsRef = useRef<OrbitControlsImpl>(null);
 
   const finalizeMove = useCallback((axis: 'x' | 'y' | 'z', layer: number, targetAngle: number) => {
     setCubies(prev => prev.map(cubie => {
@@ -159,36 +161,57 @@ export default function Simulator() {
   }, []);
 
   const handleMove = (move: string) => {
-    if (isTransitioning.current) return;
+    if (isTransitioning.current || !controlsRef.current) return;
     isTransitioning.current = true;
     setHistory(prev => [...prev, move]);
 
+    const camera = controlsRef.current.object;
     const isPrime = move.includes("'");
     const m = move.replace("'", "");
+
+    const cameraRight = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+    const cameraUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+    const cameraForward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+
+    const getClosestAxis = (vec: THREE.Vector3) => {
+      const axes = [
+        { axis: 'x', dot: vec.dot(new THREE.Vector3(1, 0, 0)) },
+        { axis: 'x', dot: vec.dot(new THREE.Vector3(-1, 0, 0)) },
+        { axis: 'y', dot: vec.dot(new THREE.Vector3(0, 1, 0)) },
+        { axis: 'y', dot: vec.dot(new THREE.Vector3(0, -1, 0)) },
+        { axis: 'z', dot: vec.dot(new THREE.Vector3(0, 0, 1)) },
+        { axis: 'z', dot: vec.dot(new THREE.Vector3(0, 0, -1)) },
+      ];
+      return axes.reduce((prev, curr) => Math.abs(curr.dot) > Math.abs(prev.dot) ? curr : prev);
+    };
+
     let axis: 'x' | 'y' | 'z' = 'x';
     let layer = 0;
     let target = Math.PI / 2;
 
+    let directionInfo;
     if (["R", "L", "M"].includes(m)) {
-      axis = 'x';
+      directionInfo = getClosestAxis(cameraRight);
       layer = m === "R" ? 1 : m === "L" ? -1 : 0;
-      target *= (m === "R") ? -1 : 1;
+      if (directionInfo.dot < 0) layer *= -1;
     } else if (["U", "D", "E"].includes(m)) {
-      axis = 'y';
+      directionInfo = getClosestAxis(cameraUp);
       layer = m === "U" ? 1 : m === "D" ? -1 : 0;
-      target *= (m === "U") ? -1 : 1;
+      if (directionInfo.dot < 0) layer *= -1;
     } else if (["F", "B", "S"].includes(m)) {
-      axis = 'z';
+      directionInfo = getClosestAxis(cameraForward);
       layer = m === "F" ? 1 : m === "B" ? -1 : 0;
-      target *= (m === "F") ? -1 : 1;
+      if (directionInfo.dot < 0) layer *= -1;
     }
 
-    if (isPrime) target *= -1;
-    setActiveMove({ axis, layer, angle: 0, target });
+    axis = directionInfo?.axis as 'x' | 'y' | 'z';
+    
+    const isClockwiseBase = ["R", "U", "F", "S", "E"].includes(m);
+    target = isClockwiseBase ? -Math.PI / 2 : Math.PI / 2;
 
-    setTimeout(() => {
-      if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }, 50);
+    if (isPrime) target *= -1;
+
+    setActiveMove({ axis, layer, angle: 0, target });
   };
 
   return (
@@ -225,7 +248,8 @@ export default function Simulator() {
             <Environment preset="city" />
             <ambientLight intensity={0.5} />
             <RubikCube cubies={cubies} activeMove={activeMove} onAnimationEnd={finalizeMove} />
-            <OrbitControls enablePan={false} makeDefault />
+            
+            <OrbitControls ref={controlsRef} enablePan={false} makeDefault />
             <ContactShadows position={[0, -2.2, 0]} opacity={0.1} scale={10} blur={3} />
           </Canvas>
         </div>
