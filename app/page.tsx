@@ -8,7 +8,7 @@ import Timer from './components/Timer';
 import Simulator from './components/Simulator';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('learn');
+  const [activeTab, setActiveTab] = useState('simulator');
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
