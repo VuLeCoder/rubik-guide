@@ -5,7 +5,7 @@ import { Menu, X, Box, BookOpen, Timer as TimerIcon } from 'lucide-react';
 
 import Learn from './components/Learn'; 
 import Timer from './components/Timer';
-import Simulator from './components/Simulator';
+import Simulator from './components/simulator/Simulator';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('simulator');
