@@ -1,9 +1,10 @@
 "use client";
 import React, { useState, useCallback, useRef } from 'react';
 import { Canvas, useFrame, RootState } from '@react-three/fiber';
-import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+// import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+import { OrbitControls, Environment, ContactShadows, RoundedBox } from '@react-three/drei'; // Thêm RoundedBox ở đây
 
 interface CubieData {
   id: number;
@@ -50,18 +51,46 @@ const generateInitialState = (): CubieData[] => {
 
 function Cubie({ stickers, position }: { stickers: string[], position: THREE.Vector3 }) {
   return (
-    <mesh position={position}>
-      <boxGeometry args={[0.92, 0.92, 0.92]} />
-      {stickers.map((col, i) => (
-        <meshStandardMaterial 
-          key={i} 
-          attach={`material-${i}`} 
-          color={col} 
-          roughness={0.05} 
-          metalness={0.1} 
-        />
-      ))}
-    </mesh>
+    <group position={position}>
+      <RoundedBox args={[0.98, 0.98, 0.98]} radius={0.06} smoothness={4}>
+        <meshStandardMaterial color="#111827" roughness={0.4} />
+      </RoundedBox>
+
+      {stickers.map((col, i) => {
+        if (col === COLORS.inner) return null;
+
+        const offset = 0.495;
+
+        const positions = [
+          [ offset, 0, 0],
+          [-offset, 0, 0],
+          [0,  offset, 0],
+          [0, -offset, 0],
+          [0, 0,  offset],
+          [0, 0, -offset],
+        ] as const;
+
+        const rotations = [
+          [0, Math.PI/2, 0],
+          [0, -Math.PI/2, 0],
+          [-Math.PI/2, 0, 0],
+          [ Math.PI/2, 0, 0],
+          [0, 0, 0],
+          [0, Math.PI, 0],
+        ] as const;
+
+        return (
+          <mesh
+            key={i}
+            position={positions[i]}
+            rotation={rotations[i]}
+          >
+            <planeGeometry args={[0.8, 0.8]} />
+            <meshStandardMaterial color={col} />
+          </mesh>
+        );
+      })}
+    </group>
   );
 }
 
