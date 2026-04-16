@@ -171,7 +171,7 @@ export default function Simulator() {
 
     const cameraRight = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
     const cameraUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
-    const cameraForward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+    const cameraForward = new THREE.Vector3(0, 0, 1).applyQuaternion(camera.quaternion);
 
     const getClosestAxis = (vec: THREE.Vector3) => {
       const axes = [
@@ -189,27 +189,36 @@ export default function Simulator() {
     let layer = 0;
     let target = Math.PI / 2;
 
+    const isClockwiseBase = ["R", "U", "F", "S", "E"].includes(m);
+    target = isClockwiseBase ? -Math.PI / 2 : Math.PI / 2;
+
     let directionInfo;
     if (["R", "L", "M"].includes(m)) {
       directionInfo = getClosestAxis(cameraRight);
       layer = m === "R" ? 1 : m === "L" ? -1 : 0;
-      if (directionInfo.dot < 0) layer *= -1;
+      if (directionInfo.dot < 0) {
+        layer *= -1;
+        target *= -1;
+      }
     } else if (["U", "D", "E"].includes(m)) {
       directionInfo = getClosestAxis(cameraUp);
       layer = m === "U" ? 1 : m === "D" ? -1 : 0;
-      if (directionInfo.dot < 0) layer *= -1;
+      if (directionInfo.dot < 0) {
+        layer *= -1;
+        target *= -1;
+      }
     } else if (["F", "B", "S"].includes(m)) {
       directionInfo = getClosestAxis(cameraForward);
       layer = m === "F" ? 1 : m === "B" ? -1 : 0;
-      if (directionInfo.dot < 0) layer *= -1;
+      if (directionInfo.dot < 0) {
+        layer *= -1;
+        target *= -1;
+      }
     }
 
     axis = directionInfo?.axis as 'x' | 'y' | 'z';
-    
-    const isClockwiseBase = ["R", "U", "F", "S", "E"].includes(m);
-    target = isClockwiseBase ? -Math.PI / 2 : Math.PI / 2;
 
-    if (isPrime) target *= -1;
+    if(isPrime) target *= -1;
 
     setActiveMove({ axis, layer, angle: 0, target });
   };
