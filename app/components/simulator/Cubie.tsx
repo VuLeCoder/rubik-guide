@@ -3,7 +3,15 @@ import * as THREE from 'three';
 import { RoundedBox } from '@react-three/drei';
 import { COLORS } from './constants';
 
-export function Cubie({ stickers, position }: { stickers: string[], position: THREE.Vector3 }) {
+export function Cubie({ 
+  stickers, 
+  position, 
+  onPointerDown 
+}: { 
+  stickers: string[], 
+  position: THREE.Vector3,
+  onPointerDown: (e: any) => void
+}) {
   const offset = 0.495;
   const positions = [
     [offset, 0, 0], [-offset, 0, 0],
@@ -26,7 +34,12 @@ export function Cubie({ stickers, position }: { stickers: string[], position: TH
       {stickers.map((col, i) => {
         if (col === COLORS.inner) return null;
         return (
-          <mesh key={i} position={positions[i]} rotation={rotations[i]}>
+          <mesh 
+            key={i} 
+            position={positions[i]} 
+            rotation={rotations[i]}
+            onPointerDown={onPointerDown}
+          >
             <planeGeometry args={[0.8, 0.8]} />
             <meshStandardMaterial color={col} />
           </mesh>

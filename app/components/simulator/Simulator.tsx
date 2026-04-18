@@ -5,7 +5,7 @@ import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
-import { CubieData, AnimatingLayer, generateInitialState } from './constants';
+import { CubieData, AnimatingLayer, DragMoveInfo, generateInitialState } from './constants';
 import { RubikCube } from './RubikCube';
 import { HistoryLog } from './HistoryLog';
 import { ControlPanel } from './ControlPanel';
@@ -44,6 +44,122 @@ export default function Simulator() {
     setActiveMove(null);
     isTransitioning.current = false;
   }, []);
+
+  const dragStart = useRef<{ 
+    pos: THREE.Vector2; 
+    normal: THREE.Vector3; 
+    cubiePos: THREE.Vector3 
+  } | null>(null);
+
+  const onPointerDown = (e: any) => {
+    e.stopPropagation();
+    if (activeMove || isTransitioning.current) return;
+
+    const { face } = e;
+    if (!face) return;
+
+    if (controlsRef.current) {
+      controlsRef.current.enabled = false;
+    }
+
+    dragStart.current = {
+      pos: new THREE.Vector2(e.clientX, e.clientY),
+      normal: face.normal.clone(),
+      cubiePos: e.object.parent.position.clone()
+    };
+  };
+
+  const onPointerMove = (e: any) => {
+    if (!dragStart.current) return;
+
+    const delta = new THREE.Vector2(e.clientX, e.clientY).sub(dragStart.current.pos);
+    
+    if (delta.length() < 5) return;
+
+    if (!activeMove) {
+      const moveInfo = calculateDragMove(dragStart.current.normal, dragStart.current.cubiePos, delta);
+      if (moveInfo) {
+        setActiveMove({
+          ...moveInfo,
+          angle: 0,
+          isDragging: true
+        });
+      }
+    } else if (activeMove.isDragging) {
+      const sensitivity = 200;
+      const progress = Math.min(delta.length() / sensitivity, 1);
+      const currentAngle = progress * activeMove.target;
+      
+      setActiveMove(prev => prev ? { ...prev, angle: currentAngle } : null);
+    }
+  };
+
+  const onPointerUp = () => {
+    if (controlsRef.current) {
+      controlsRef.current.enabled = true;
+    }
+
+    if (activeMove?.isDragging) {
+      const threshold = Math.PI / 8; 
+      
+      const finalTarget = Math.abs(activeMove.angle) > threshold ? activeMove.target : 0;
+      
+      setActiveMove(prev => prev ? { 
+        ...prev, 
+        target: finalTarget, 
+        isDragging: false
+      } : null);
+    }
+    dragStart.current = null;
+  };
+
+  const calculateDragMove = (
+    normal: THREE.Vector3, 
+    cubiePos: THREE.Vector3, 
+    delta: THREE.Vector2
+  ): DragMoveInfo | null => {
+    if (!controlsRef.current) return null;
+    const camera = controlsRef.current.object;
+
+    const dragDir = new THREE.Vector2(delta.x, -delta.y).normalize();
+
+    let bestMove: DragMoveInfo | null = null;
+    let maxConfidence = -1;
+
+    const axes: ('x' | 'y' | 'z')[] = ['x', 'y', 'z'];
+
+    for (const ax of axes) {
+      const axisVec = new THREE.Vector3(
+        ax === 'x' ? 1 : 0, 
+        ax === 'y' ? 1 : 0, 
+        ax === 'z' ? 1 : 0
+      );
+      
+      if (Math.abs(axisVec.dot(normal)) > 0.9) continue;
+
+      const worldMoveDir = new THREE.Vector3().crossVectors(axisVec, normal).normalize();
+
+      const startProp = cubiePos.clone().project(camera);
+      const endProp = cubiePos.clone().add(worldMoveDir).project(camera);
+      const screenMoveDir = new THREE.Vector2(
+        endProp.x - startProp.x,
+        endProp.y - startProp.y
+      ).normalize();
+
+      const confidence = dragDir.dot(screenMoveDir);
+
+      if (Math.abs(confidence) > maxConfidence) {
+        maxConfidence = Math.abs(confidence);
+        bestMove = {
+          axis: ax,
+          layer: Math.round(cubiePos[ax]),
+          target: (Math.PI / 2) * (confidence > 0 ? 1 : -1)
+        };
+      }
+    }
+
+    return bestMove;
+  };
 
   const handleMove = (move: string) => {
     if (isTransitioning.current || !controlsRef.current) return;
@@ -109,10 +225,22 @@ export default function Simulator() {
         </div>
         
         <div className="col-span-12 lg:col-span-5 h-[400px] lg:h-[500px] bg-[#1f2a44] rounded-[32px] relative overflow-hidden border border-slate-200 shadow-inner">
-          <Canvas camera={{ position: [5, 5, 5], fov: 55 }}>
+          <Canvas 
+            camera={{ position: [5, 5, 5], fov: 55 }} 
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+          >
             <Environment preset="city" />
             <ambientLight intensity={0.5} />
-            <RubikCube cubies={cubies} activeMove={activeMove} onAnimationEnd={finalizeMove} />
+            
+            <RubikCube
+              cubies={cubies} 
+              activeMove={activeMove} 
+              setActiveMove={setActiveMove}
+              onAnimationEnd={finalizeMove} 
+              onPointerDown={onPointerDown} 
+            />
+            
             <OrbitControls ref={controlsRef} enablePan={false} makeDefault />
             <ContactShadows position={[0, -2.2, 0]} opacity={0.1} scale={10} blur={3} />
           </Canvas>

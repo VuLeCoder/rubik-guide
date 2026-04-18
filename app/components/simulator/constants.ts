@@ -11,6 +11,13 @@ export interface AnimatingLayer {
   layer: number;
   angle: number;
   target: number;
+  isDragging?: boolean;
+}
+
+export interface DragMoveInfo {
+  axis: 'x' | 'y' | 'z';
+  layer: number;
+  target: number;
 }
 
 export const COLORS = {
@@ -42,3 +49,11 @@ export const generateInitialState = (): CubieData[] => {
     };
   });
 };
+
+export interface RubikCubeProps {
+  cubies: CubieData[];
+  activeMove: AnimatingLayer | null;
+  setActiveMove: React.Dispatch<React.SetStateAction<AnimatingLayer | null>>;
+  onAnimationEnd: (axis: 'x' | 'y' | 'z', layer: number, target: number) => void;
+  onPointerDown: (e: any) => void;
+}
