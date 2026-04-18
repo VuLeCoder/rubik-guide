@@ -1,51 +1,72 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useFrame, RootState } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Cubie } from './Cubie';
-import { CubieData } from './constants';
-import { RubikCubeProps } from './constants';
+import { CubieData, RubikCubeProps } from './constants';
 
 export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, onPointerDown }: RubikCubeProps) {
   const rotationGroupRef = useRef<THREE.Group>(null);
   const rotationAngleRef = useRef(0);
 
-  useFrame((_state: RootState, delta: number) => {
-    if (activeMove && rotationGroupRef.current) {
-      if (activeMove.isDragging) {
-        rotationAngleRef.current = activeMove.angle;
-        rotationGroupRef.current.rotation[activeMove.axis] = activeMove.angle;
-        return; 
-      }
+  const { movingCubies, staticCubies } = useMemo(() => {
+    if (!activeMove) return { movingCubies: [], staticCubies: cubies };
 
-      const step = (Math.PI / 2) * (delta / 0.4);
-      const diff = activeMove.target - rotationAngleRef.current;
+    const moving: CubieData[] = [];
+    const staticList: CubieData[] = [];
 
-      if (Math.abs(diff) > 0.01) {
-        rotationAngleRef.current += Math.sign(diff) * Math.min(step, Math.abs(diff));
-        rotationGroupRef.current.rotation[activeMove.axis] = rotationAngleRef.current;
+    cubies.forEach((c) => {
+      const val = activeMove.axis === 'x' ? c.pos.x : activeMove.axis === 'y' ? c.pos.y : c.pos.z;
+      if (Math.abs(val - activeMove.layer) <= 0.1) {
+        moving.push(c);
       } else {
-        if (activeMove.target !== 0) {
-          onAnimationEnd(activeMove.axis, activeMove.layer, activeMove.target);
-        } else {
-          setActiveMove(null);
-        }
-        
-        rotationAngleRef.current = 0;
-        rotationGroupRef.current.rotation.set(0, 0, 0);
+        staticList.push(c);
+      }
+    });
+    return { movingCubies: moving, staticCubies: staticList };
+  }, [cubies, activeMove]);
+
+  useFrame((_state: RootState, delta: number) => {
+    if (!activeMove || !rotationGroupRef.current) return;
+
+    if (activeMove.isDragging) {
+      rotationAngleRef.current = activeMove.angle;
+      rotationGroupRef.current.rotation[activeMove.axis] = activeMove.angle;
+      return;
+    }
+    // const step = (Math.PI / 2) * (delta / 0.4); 
+    // const diff = activeMove.target - rotationAngleRef.current;
+
+    const duration = 0.35; 
+    const totalRotation = Math.PI / 2;
+
+    const step = (totalRotation / duration) * delta;
+
+    const diff = activeMove.target - rotationAngleRef.current;
+
+
+    if (Math.abs(diff) > 0.001) {
+      const move = Math.sign(diff) * Math.min(step, Math.abs(diff));
+      rotationAngleRef.current += move;
+      rotationGroupRef.current.rotation[activeMove.axis] = rotationAngleRef.current;
+    } else {
+      const finalAxis = activeMove.axis;
+      const finalLayer = activeMove.layer;
+      const finalTarget = activeMove.target;
+
+      rotationAngleRef.current = 0;
+      rotationGroupRef.current.rotation.set(0, 0, 0);
+
+      if (finalTarget !== 0) {
+        onAnimationEnd(finalAxis, finalLayer, finalTarget);
+      } else {
+        setActiveMove(null);
       }
     }
   });
 
-  const isMoving = (c: CubieData) => {
-    if (!activeMove) return false;
-    const val = activeMove.axis === 'x' ? c.pos.x : activeMove.axis === 'y' ? c.pos.y : c.pos.z;
-    return Math.abs(val - activeMove.layer) <= 0.1;
-  };
-
   return (
     <group>
-      {/* Các khối tĩnh (không xoay) */}
-      {cubies.filter(c => !isMoving(c)).map(data => (
+      {staticCubies.map((data) => (
         <Cubie 
           key={data.id} 
           stickers={data.stickers} 
@@ -54,9 +75,8 @@ export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, o
         />
       ))}
 
-      {/* Nhóm các khối đang xoay */}
       <group ref={rotationGroupRef}>
-        {cubies.filter(c => isMoving(c)).map(data => (
+        {movingCubies.map((data) => (
           <Cubie 
             key={data.id} 
             stickers={data.stickers} 

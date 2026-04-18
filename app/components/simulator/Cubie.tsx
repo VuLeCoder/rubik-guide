@@ -1,9 +1,9 @@
-import React from 'react';
 import * as THREE from 'three';
 import { RoundedBox } from '@react-three/drei';
 import { COLORS } from './constants';
+import { memo } from 'react';
 
-export function Cubie({ 
+export const Cubie = memo(function Cubie({ 
   stickers, 
   position, 
   onPointerDown 
@@ -47,4 +47,4 @@ export function Cubie({
       })}
     </group>
   );
-}
+})
