@@ -81,8 +81,8 @@ export default function Simulator() {
   const onPointerMove = (e: any) => {
     if (!dragStart.current || !controlsRef.current) return;
 
-    const canvas = controlsRef.current.domElement;
-    const rect = canvas.getBoundingClientRect();
+    const canvas = controlsRef.current!.domElement;
+    const rect = canvas!.getBoundingClientRect();
     
     tempMouse.set(
       ((e.clientX - rect.left) / rect.width) * 2 - 1,
