@@ -10,6 +10,13 @@ import { RubikCube } from './RubikCube';
 import { HistoryLog } from './HistoryLog';
 import { ControlPanel } from './ControlPanel';
 
+const tempVector = new THREE.Vector3();
+const tempMouse = new THREE.Vector2();
+const raycaster = new THREE.Raycaster();
+const intersectPoint = new THREE.Vector3();
+const tempPlane = new THREE.Plane();
+const threshold = Math.PI / 6;
+
 export default function Simulator() {
   const [cubies, setCubies] = useState<CubieData[]>(generateInitialState());
   const [history, setHistory] = useState<string[]>([]);
@@ -75,27 +82,26 @@ export default function Simulator() {
 
     const canvas = controlsRef.current.domElement;
     const rect = canvas.getBoundingClientRect();
-    const mouse = new THREE.Vector2(
+    
+    // Sử dụng biến tĩnh thay vì tạo mới
+    tempMouse.set(
       ((e.clientX - rect.left) / rect.width) * 2 - 1,
       -((e.clientY - rect.top) / rect.height) * 2 + 1
     );
 
     const camera = controlsRef.current.object;
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, camera);
+    raycaster.setFromCamera(tempMouse, camera);
 
-    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+    tempPlane.setFromNormalAndCoplanarPoint(
       dragStart.current.normal,
       dragStart.current.point
     );
 
-    const intersectPoint = new THREE.Vector3();
-    raycaster.ray.intersectPlane(plane, intersectPoint);
+    raycaster.ray.intersectPlane(tempPlane, intersectPoint);
     if (!intersectPoint) return;
 
-    const v3d = intersectPoint.clone().sub(dragStart.current.point);
-    
-    if (v3d.length() < 0.1 && !activeMove) return; 
+    const v3d = tempVector.subVectors(intersectPoint, dragStart.current.point);
+    if (v3d.length() < 0.001 && !activeMove) return; 
 
     const A_raw = new THREE.Vector3().crossVectors(dragStart.current.normal, v3d);
 
@@ -105,7 +111,6 @@ export default function Simulator() {
 
       (['x', 'y', 'z'] as const).forEach(ax => {
         if (Math.abs(dragStart.current!.normal[ax]) > 0.5) return; 
-        
         const val = Math.abs(A_raw[ax]);
         if (val > maxVal) {
           maxVal = val;
@@ -123,11 +128,8 @@ export default function Simulator() {
       });
     } else if (activeMove.isDragging) {
       const angleRaw = A_raw[activeMove.axis];
-      
-      let currentAngle = (angleRaw / 1.2) * (Math.PI / 2);
-      
-      currentAngle = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, currentAngle));
-      dragAngleRef.current = currentAngle;
+      const currentAngle = (angleRaw / 1.5) * (Math.PI / 2);
+      dragAngleRef.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, currentAngle));
     }
   };
 
@@ -136,8 +138,7 @@ export default function Simulator() {
       controlsRef.current.enabled = true;
     }
 
-    if (activeMove?.isDragging) {
-      const threshold = Math.PI / 8; 
+    if (activeMove?.isDragging) { 
       const finalAngle = dragAngleRef.current;
       let finalTarget = 0;
 

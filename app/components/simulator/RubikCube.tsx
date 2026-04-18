@@ -4,6 +4,8 @@ import * as THREE from 'three';
 import { Cubie } from './Cubie';
 import { CubieData, RubikCubeProps } from './constants';
 
+const speed = 10;
+
 export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, onPointerDown, dragAngleRef }: RubikCubeProps) {
   const rotationGroupRef = useRef<THREE.Group>(null);
   const rotationAngleRef = useRef(0);
@@ -29,36 +31,31 @@ export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, o
     if (!activeMove || !rotationGroupRef.current) return;
 
     if (activeMove.isDragging) {
-      const currentDragAngle = dragAngleRef.current;
-      rotationAngleRef.current = currentDragAngle;
-      rotationGroupRef.current.rotation[activeMove.axis] = currentDragAngle;
+      rotationGroupRef.current.rotation[activeMove.axis] = dragAngleRef.current;
+      rotationAngleRef.current = dragAngleRef.current;
       return;
     }
     // const step = (Math.PI / 2) * (delta / 0.4); 
     // const diff = activeMove.target - rotationAngleRef.current;
 
-    const duration = 0.35; 
-    const totalRotation = Math.PI / 2;
-
-    const step = (totalRotation / duration) * delta;
-
+    // const duration = 0.35; 
+    // const totalRotation = Math.PI / 2;
+    // const step = (totalRotation / duration) * delta;
     const diff = activeMove.target - rotationAngleRef.current;
 
-
-    if (Math.abs(diff) > 0.001) {
-      const move = Math.sign(diff) * Math.min(step, Math.abs(diff));
+    if (Math.abs(diff) > 0.001) { 
+      const easingFactor = 1 - Math.exp(-speed * delta);
+      
+      const move = diff * easingFactor;
       rotationAngleRef.current += move;
       rotationGroupRef.current.rotation[activeMove.axis] = rotationAngleRef.current;
     } else {
-      const finalAxis = activeMove.axis;
-      const finalLayer = activeMove.layer;
-      const finalTarget = activeMove.target;
-
+      const { axis, layer, target } = activeMove;
       rotationAngleRef.current = 0;
       rotationGroupRef.current.rotation.set(0, 0, 0);
 
-      if (finalTarget !== 0) {
-        onAnimationEnd(finalAxis, finalLayer, finalTarget);
+      if (target !== 0) {
+        onAnimationEnd(axis, layer, target);
       } else {
         setActiveMove(null);
       }
