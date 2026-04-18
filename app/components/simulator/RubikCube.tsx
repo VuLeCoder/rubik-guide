@@ -21,10 +21,12 @@ export function RubikCube({ cubies, activeMove, onAnimationEnd }: {
         
         if (Math.abs(rotationAngleRef.current) >= Math.abs(activeMove.target)) {
           onAnimationEnd(activeMove.axis, activeMove.layer, activeMove.target);
-          setTimeout(() => {
+          requestAnimationFrame(() => {
             rotationAngleRef.current = 0;
-            if (rotationGroupRef.current) rotationGroupRef.current.rotation.set(0, 0, 0);
-          }, 0);
+            if (rotationGroupRef.current) {
+              rotationGroupRef.current.rotation.set(0, 0, 0);
+            }
+          });
         } else {
           const axis = activeMove.axis;
           rotationGroupRef.current.rotation[axis] = rotationAngleRef.current;
