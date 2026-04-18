@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { Cubie } from './Cubie';
 import { CubieData, RubikCubeProps } from './constants';
 
-export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, onPointerDown }: RubikCubeProps) {
+export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, onPointerDown, dragAngleRef }: RubikCubeProps) {
   const rotationGroupRef = useRef<THREE.Group>(null);
   const rotationAngleRef = useRef(0);
 
@@ -29,8 +29,9 @@ export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, o
     if (!activeMove || !rotationGroupRef.current) return;
 
     if (activeMove.isDragging) {
-      rotationAngleRef.current = activeMove.angle;
-      rotationGroupRef.current.rotation[activeMove.axis] = activeMove.angle;
+      const currentDragAngle = dragAngleRef.current;
+      rotationAngleRef.current = currentDragAngle;
+      rotationGroupRef.current.rotation[activeMove.axis] = currentDragAngle;
       return;
     }
     // const step = (Math.PI / 2) * (delta / 0.4); 

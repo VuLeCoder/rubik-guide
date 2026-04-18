@@ -56,4 +56,5 @@ export interface RubikCubeProps {
   setActiveMove: React.Dispatch<React.SetStateAction<AnimatingLayer | null>>;
   onAnimationEnd: (axis: 'x' | 'y' | 'z', layer: number, target: number) => void;
   onPointerDown: (e: any) => void;
+  dragAngleRef: React.MutableRefObject<number>; 
 }

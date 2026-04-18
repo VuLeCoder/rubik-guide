@@ -17,6 +17,7 @@ export default function Simulator() {
   const isTransitioning = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControlsImpl>(null);
+  const dragAngleRef = useRef(0);
 
   const finalizeMove = useCallback((axis: 'x' | 'y' | 'z', layer: number, targetAngle: number) => {
     setCubies(prev => prev.map(cubie => {
@@ -73,12 +74,12 @@ export default function Simulator() {
     if (!dragStart.current) return;
 
     const delta = new THREE.Vector2(e.clientX, e.clientY).sub(dragStart.current.pos);
-    
     if (delta.length() < 5) return;
 
     if (!activeMove) {
       const moveInfo = calculateDragMove(dragStart.current.normal, dragStart.current.cubiePos, delta);
       if (moveInfo) {
+        dragAngleRef.current = 0; 
         setActiveMove({
           ...moveInfo,
           angle: 0,
@@ -90,7 +91,7 @@ export default function Simulator() {
       const progress = Math.min(delta.length() / sensitivity, 1);
       const currentAngle = progress * activeMove.target;
       
-      setActiveMove(prev => prev ? { ...prev, angle: currentAngle } : null);
+      dragAngleRef.current = currentAngle; 
     }
   };
 
@@ -100,9 +101,8 @@ export default function Simulator() {
     }
 
     if (activeMove?.isDragging) {
-      const threshold = Math.PI / 8; 
-      
-      const finalTarget = Math.abs(activeMove.angle) > threshold ? activeMove.target : 0;
+      const threshold = Math.PI / 8;
+      const finalTarget = Math.abs(dragAngleRef.current) > threshold ? activeMove.target : 0;
       
       setActiveMove(prev => prev ? { 
         ...prev, 
@@ -112,7 +112,7 @@ export default function Simulator() {
     }
     dragStart.current = null;
   };
-
+  
   const calculateDragMove = (
     normal: THREE.Vector3, 
     cubiePos: THREE.Vector3, 
@@ -239,6 +239,7 @@ export default function Simulator() {
               setActiveMove={setActiveMove}
               onAnimationEnd={finalizeMove} 
               onPointerDown={onPointerDown} 
+              dragAngleRef={dragAngleRef}
             />
             
             <OrbitControls ref={controlsRef} enablePan={false} makeDefault />
