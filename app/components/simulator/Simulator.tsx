@@ -5,7 +5,7 @@ import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
-import { CubieData, AnimatingLayer, DragMoveInfo, generateInitialState } from './constants';
+import { CubieData, AnimatingLayer, generateInitialState } from './constants';
 import { RubikCube } from './RubikCube';
 import { HistoryLog } from './HistoryLog';
 import { ControlPanel } from './ControlPanel';
@@ -18,6 +18,11 @@ export default function Simulator() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const dragAngleRef = useRef(0);
+  const dragStart = useRef<{ 
+    point: THREE.Vector3;
+    normal: THREE.Vector3;
+    cubiePos: THREE.Vector3
+  } | null>(null);
 
   const finalizeMove = useCallback((axis: 'x' | 'y' | 'z', layer: number, targetAngle: number) => {
     setCubies(prev => prev.map(cubie => {
@@ -45,53 +50,84 @@ export default function Simulator() {
     setActiveMove(null);
     isTransitioning.current = false;
   }, []);
-
-  const dragStart = useRef<{ 
-    pos: THREE.Vector2; 
-    normal: THREE.Vector3; 
-    cubiePos: THREE.Vector3 
-  } | null>(null);
-
+// ============================================
+// ============================================
   const onPointerDown = (e: any) => {
     e.stopPropagation();
     if (activeMove || isTransitioning.current) return;
-
-    const { face } = e;
-    if (!face) return;
+    if (!e.object) return;
 
     if (controlsRef.current) {
       controlsRef.current.enabled = false;
     }
 
+    const worldNormal = e.object.position.clone().normalize().round();
+
     dragStart.current = {
-      pos: new THREE.Vector2(e.clientX, e.clientY),
-      normal: face.normal.clone(),
-      cubiePos: e.object.parent.position.clone()
+      point: e.point.clone(),
+      normal: worldNormal,
+      cubiePos: e.object.parent.position.clone().round()
     };
   };
 
   const onPointerMove = (e: any) => {
-    if (!dragStart.current) return;
+    if (!dragStart.current || !controlsRef.current) return;
 
-    const delta = new THREE.Vector2(e.clientX, e.clientY).sub(dragStart.current.pos);
-    if (delta.length() < 5) return;
+    const canvas = controlsRef.current.domElement;
+    const rect = canvas.getBoundingClientRect();
+    const mouse = new THREE.Vector2(
+      ((e.clientX - rect.left) / rect.width) * 2 - 1,
+      -((e.clientY - rect.top) / rect.height) * 2 + 1
+    );
+
+    const camera = controlsRef.current.object;
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, camera);
+
+    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+      dragStart.current.normal,
+      dragStart.current.point
+    );
+
+    const intersectPoint = new THREE.Vector3();
+    raycaster.ray.intersectPlane(plane, intersectPoint);
+    if (!intersectPoint) return;
+
+    const v3d = intersectPoint.clone().sub(dragStart.current.point);
+    
+    if (v3d.length() < 0.1 && !activeMove) return; 
+
+    const A_raw = new THREE.Vector3().crossVectors(dragStart.current.normal, v3d);
 
     if (!activeMove) {
-      const moveInfo = calculateDragMove(dragStart.current.normal, dragStart.current.cubiePos, delta);
-      if (moveInfo) {
-        dragAngleRef.current = 0; 
-        setActiveMove({
-          ...moveInfo,
-          angle: 0,
-          isDragging: true
-        });
-      }
+      let maxVal = -1;
+      let bestAxis: 'x' | 'y' | 'z' = 'x';
+
+      (['x', 'y', 'z'] as const).forEach(ax => {
+        if (Math.abs(dragStart.current!.normal[ax]) > 0.5) return; 
+        
+        const val = Math.abs(A_raw[ax]);
+        if (val > maxVal) {
+          maxVal = val;
+          bestAxis = ax;
+        }
+      });
+
+      dragAngleRef.current = 0;
+      setActiveMove({
+        axis: bestAxis,
+        layer: dragStart.current.cubiePos[bestAxis],
+        target: 0,
+        angle: 0,
+        isDragging: true
+      });
     } else if (activeMove.isDragging) {
-      const sensitivity = 200;
-      const progress = Math.min(delta.length() / sensitivity, 1);
-      const currentAngle = progress * activeMove.target;
+      const angleRaw = A_raw[activeMove.axis];
       
-      dragAngleRef.current = currentAngle; 
+      let currentAngle = (angleRaw / 1.2) * (Math.PI / 2);
+      
+      currentAngle = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, currentAngle));
+      dragAngleRef.current = currentAngle;
     }
   };
 
@@ -101,8 +137,15 @@ export default function Simulator() {
     }
 
     if (activeMove?.isDragging) {
-      const threshold = Math.PI / 8;
-      const finalTarget = Math.abs(dragAngleRef.current) > threshold ? activeMove.target : 0;
+      const threshold = Math.PI / 8; 
+      const finalAngle = dragAngleRef.current;
+      let finalTarget = 0;
+
+      if (finalAngle > threshold) {
+        finalTarget = Math.PI / 2;
+      } else if (finalAngle < -threshold) {
+        finalTarget = -Math.PI / 2;
+      }
       
       setActiveMove(prev => prev ? { 
         ...prev, 
@@ -112,55 +155,8 @@ export default function Simulator() {
     }
     dragStart.current = null;
   };
-  
-  const calculateDragMove = (
-    normal: THREE.Vector3, 
-    cubiePos: THREE.Vector3, 
-    delta: THREE.Vector2
-  ): DragMoveInfo | null => {
-    if (!controlsRef.current) return null;
-    const camera = controlsRef.current.object;
-
-    const dragDir = new THREE.Vector2(delta.x, -delta.y).normalize();
-
-    let bestMove: DragMoveInfo | null = null;
-    let maxConfidence = -1;
-
-    const axes: ('x' | 'y' | 'z')[] = ['x', 'y', 'z'];
-
-    for (const ax of axes) {
-      const axisVec = new THREE.Vector3(
-        ax === 'x' ? 1 : 0, 
-        ax === 'y' ? 1 : 0, 
-        ax === 'z' ? 1 : 0
-      );
-      
-      if (Math.abs(axisVec.dot(normal)) > 0.9) continue;
-
-      const worldMoveDir = new THREE.Vector3().crossVectors(axisVec, normal).normalize();
-
-      const startProp = cubiePos.clone().project(camera);
-      const endProp = cubiePos.clone().add(worldMoveDir).project(camera);
-      const screenMoveDir = new THREE.Vector2(
-        endProp.x - startProp.x,
-        endProp.y - startProp.y
-      ).normalize();
-
-      const confidence = dragDir.dot(screenMoveDir);
-
-      if (Math.abs(confidence) > maxConfidence) {
-        maxConfidence = Math.abs(confidence);
-        bestMove = {
-          axis: ax,
-          layer: Math.round(cubiePos[ax]),
-          target: (Math.PI / 2) * (confidence > 0 ? 1 : -1)
-        };
-      }
-    }
-
-    return bestMove;
-  };
-
+// ============================================
+// ============================================
   const handleMove = (move: string) => {
     if (isTransitioning.current || !controlsRef.current) return;
     isTransitioning.current = true;

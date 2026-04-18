@@ -14,12 +14,6 @@ export interface AnimatingLayer {
   isDragging?: boolean;
 }
 
-export interface DragMoveInfo {
-  axis: 'x' | 'y' | 'z';
-  layer: number;
-  target: number;
-}
-
 export const COLORS = {
   top: '#FFFFFF',
   bottom: '#FFD700',
