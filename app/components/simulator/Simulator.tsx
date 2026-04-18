@@ -5,17 +5,18 @@ import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
-import { CubieData, AnimatingLayer, generateInitialState } from './constants';
+import { RUBIK_CONFIG, CubieData, AnimatingLayer, generateInitialState } from './constants';
 import { RubikCube } from './RubikCube';
 import { HistoryLog } from './HistoryLog';
 import { ControlPanel } from './ControlPanel';
+
+const {PHYSICS, SCENE} = RUBIK_CONFIG;
 
 const tempVector = new THREE.Vector3();
 const tempMouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
 const intersectPoint = new THREE.Vector3();
 const tempPlane = new THREE.Plane();
-const threshold = Math.PI / 6;
 
 export default function Simulator() {
   const [cubies, setCubies] = useState<CubieData[]>(generateInitialState());
@@ -34,7 +35,7 @@ export default function Simulator() {
   const finalizeMove = useCallback((axis: 'x' | 'y' | 'z', layer: number, targetAngle: number) => {
     setCubies(prev => prev.map(cubie => {
       const val = axis === 'x' ? cubie.pos.x : axis === 'y' ? cubie.pos.y : cubie.pos.z;
-      if (Math.abs(val - layer) > 0.1) return cubie;
+      if (Math.abs(val - layer) > PHYSICS.LAYER_THRESHOLD) return cubie;
 
       const rotationAxis = new THREE.Vector3(axis === 'x' ? 1 : 0, axis === 'y' ? 1 : 0, axis === 'z' ? 1 : 0);
       const newPos = cubie.pos.clone().applyAxisAngle(rotationAxis, targetAngle);
@@ -83,7 +84,6 @@ export default function Simulator() {
     const canvas = controlsRef.current.domElement;
     const rect = canvas.getBoundingClientRect();
     
-    // Sử dụng biến tĩnh thay vì tạo mới
     tempMouse.set(
       ((e.clientX - rect.left) / rect.width) * 2 - 1,
       -((e.clientY - rect.top) / rect.height) * 2 + 1
@@ -101,7 +101,7 @@ export default function Simulator() {
     if (!intersectPoint) return;
 
     const v3d = tempVector.subVectors(intersectPoint, dragStart.current.point);
-    if (v3d.length() < 0.001 && !activeMove) return; 
+    if (v3d.length() < PHYSICS.DRAG_DISTANCE_MIN && !activeMove) return; 
 
     const A_raw = new THREE.Vector3().crossVectors(dragStart.current.normal, v3d);
 
@@ -128,7 +128,7 @@ export default function Simulator() {
       });
     } else if (activeMove.isDragging) {
       const angleRaw = A_raw[activeMove.axis];
-      const currentAngle = (angleRaw / 1.5) * (Math.PI / 2);
+      const currentAngle = (angleRaw / PHYSICS.DRAG_SENSITIVITY) * (Math.PI / 2);
       dragAngleRef.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, currentAngle));
     }
   };
@@ -142,9 +142,9 @@ export default function Simulator() {
       const finalAngle = dragAngleRef.current;
       let finalTarget = 0;
 
-      if (finalAngle > threshold) {
+      if (finalAngle > PHYSICS.SNAP_THRESHOLD) {
         finalTarget = Math.PI / 2;
-      } else if (finalAngle < -threshold) {
+      } else if (finalAngle < -PHYSICS.SNAP_THRESHOLD) {
         finalTarget = -Math.PI / 2;
       }
       
@@ -223,12 +223,12 @@ export default function Simulator() {
         
         <div className="col-span-12 lg:col-span-5 h-[400px] lg:h-[500px] bg-[#1f2a44] rounded-[32px] relative overflow-hidden border border-slate-200 shadow-inner">
           <Canvas 
-            camera={{ position: [5, 5, 5], fov: 55 }} 
+            camera={{ position: SCENE.CAMERA_POS, fov: SCENE.CAMERA_FOV }} 
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
           >
             <Environment preset="city" />
-            <ambientLight intensity={0.5} />
+            <ambientLight intensity={SCENE.LIGHT_INTENSITY} />
             
             <RubikCube
               cubies={cubies} 
@@ -240,7 +240,12 @@ export default function Simulator() {
             />
             
             <OrbitControls ref={controlsRef} enablePan={false} makeDefault />
-            <ContactShadows position={[0, -2.2, 0]} opacity={0.1} scale={10} blur={3} />
+            <ContactShadows
+              position={SCENE.SHADOW.POSITION}
+              opacity={SCENE.SHADOW.OPACITY}
+              scale={SCENE.SHADOW.SCALE}
+              blur={SCENE.SHADOW.BLUR}
+            />
           </Canvas>
         </div>
 

@@ -1,7 +1,10 @@
 import * as THREE from 'three';
 import { RoundedBox } from '@react-three/drei';
-import { COLORS } from './constants';
+import { RUBIK_CONFIG, COLORS } from './constants';
 import { memo } from 'react';
+
+const {LAYOUT} = RUBIK_CONFIG;
+const offset = LAYOUT.STICKER_OFFSET;
 
 export const Cubie = memo(function Cubie({ 
   stickers, 
@@ -12,7 +15,6 @@ export const Cubie = memo(function Cubie({
   position: THREE.Vector3,
   onPointerDown: (e: any) => void
 }) {
-  const offset = 0.495;
   const positions = [
     [offset, 0, 0], [-offset, 0, 0],
     [0, offset, 0], [0, -offset, 0],
@@ -27,7 +29,11 @@ export const Cubie = memo(function Cubie({
 
   return (
     <group position={position}>
-      <RoundedBox args={[0.98, 0.98, 0.98]} radius={0.06} smoothness={4}>
+      <RoundedBox 
+        args={[LAYOUT.CUBIE_SIZE, LAYOUT.CUBIE_SIZE, LAYOUT.CUBIE_SIZE]} 
+        radius={LAYOUT.CUBIE_RADIUS} 
+        smoothness={LAYOUT.CUBIE_SMOOTHNESS}
+      >
         <meshStandardMaterial color="#111827" roughness={0.4} />
       </RoundedBox>
 
@@ -40,7 +46,7 @@ export const Cubie = memo(function Cubie({
             rotation={rotations[i]}
             onPointerDown={onPointerDown}
           >
-            <planeGeometry args={[0.8, 0.8]} />
+            <planeGeometry args={[LAYOUT.STICKER_SIZE, LAYOUT.STICKER_SIZE]} />
             <meshStandardMaterial color={col} />
           </mesh>
         );

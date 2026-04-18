@@ -2,9 +2,9 @@ import { useRef, useMemo } from 'react';
 import { useFrame, RootState } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Cubie } from './Cubie';
-import { CubieData, RubikCubeProps } from './constants';
+import { RUBIK_CONFIG, CubieData, RubikCubeProps } from './constants';
 
-const speed = 10;
+const {PHYSICS} = RUBIK_CONFIG;
 
 export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, onPointerDown, dragAngleRef }: RubikCubeProps) {
   const rotationGroupRef = useRef<THREE.Group>(null);
@@ -18,7 +18,7 @@ export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, o
 
     cubies.forEach((c) => {
       const val = activeMove.axis === 'x' ? c.pos.x : activeMove.axis === 'y' ? c.pos.y : c.pos.z;
-      if (Math.abs(val - activeMove.layer) <= 0.1) {
+      if (Math.abs(val - activeMove.layer) <= PHYSICS.LAYER_THRESHOLD) {
         moving.push(c);
       } else {
         staticList.push(c);
@@ -43,8 +43,8 @@ export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, o
     // const step = (totalRotation / duration) * delta;
     const diff = activeMove.target - rotationAngleRef.current;
 
-    if (Math.abs(diff) > 0.001) { 
-      const easingFactor = 1 - Math.exp(-speed * delta);
+    if (Math.abs(diff) > PHYSICS.EPSILON) { 
+      const easingFactor = 1 - Math.exp(-PHYSICS.ANIMATION_SPEED * delta);
       
       const move = diff * easingFactor;
       rotationAngleRef.current += move;

@@ -1,5 +1,44 @@
 import * as THREE from 'three';
 
+export const RUBIK_CONFIG = {
+  LAYOUT: {
+    CUBIE_SIZE: 0.98,
+    CUBIE_RADIUS: 0.06,
+    CUBIE_SMOOTHNESS: 4,
+    STICKER_OFFSET: 0.495,
+    STICKER_SIZE: 0.8
+  },
+  PHYSICS: {
+    ANIMATION_SPEED: 10,
+    DRAG_SENSITIVITY: 1.5,
+    SNAP_THRESHOLD: Math.PI / 6,
+    LAYER_THRESHOLD: 0.1,
+    EPSILON: 0.001,
+    DRAG_DISTANCE_MIN: 0.001,
+  },
+  SCENE: {
+    CAMERA_POS: [5, 5, 5] as [number, number, number],
+    CAMERA_FOV: 55,
+    LIGHT_INTENSITY: 0.5,
+    SHADOW: {
+      POSITION: [0, -2.2, 0] as [number, number, number],
+      OPACITY: 0.1,
+      SCALE: 10,
+      BLUR: 3,
+    }
+  }
+};
+
+export const COLORS = {
+  top: '#FFFFFF',
+  bottom: '#FFD700',
+  front: '#22C55E',
+  back: '#3B82F6',
+  right: '#F97316',
+  left: '#EF4444',
+  inner: '#1E293B'
+};
+
 export interface CubieData {
   id: number;
   pos: THREE.Vector3;
@@ -13,16 +52,6 @@ export interface AnimatingLayer {
   target: number;
   isDragging?: boolean;
 }
-
-export const COLORS = {
-  top: '#FFFFFF',
-  bottom: '#FFD700',
-  front: '#22C55E',
-  back: '#3B82F6',
-  right: '#F97316',
-  left: '#EF4444',
-  inner: '#1E293B'
-};
 
 export const generateInitialState = (): CubieData[] => {
   return Array.from({ length: 27 }).map((_, i) => {
