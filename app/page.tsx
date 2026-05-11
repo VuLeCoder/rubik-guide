@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Menu, X, Box, BookOpen, Timer as TimerIcon } from 'lucide-react';
 
 import Simulator from './components/simulator/Simulator';
-import Learn from './components/Learn'; 
+import Learn from './components/learn/Learn'; 
 import Timer from './components/Timer';
 
 export default function Home() {
