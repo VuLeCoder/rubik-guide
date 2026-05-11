@@ -3,6 +3,7 @@ import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
+import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { RUBIK_CONFIG, COLORS, generateInitialState, CubieData, AnimatingLayer } from './constants';
 import { RubikCube } from './RubikCube';
 
@@ -17,6 +18,7 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
   const [cubies, setCubies] = useState<CubieData[]>([]);
   const [activeMove, setActiveMove] = useState<AnimatingLayer | null>(null);
   const moveQueue = useRef<string[]>([]);
+  const controlsRef = useRef<OrbitControlsImpl>(null);
 
   // Initialize cubies based on step
   useEffect(() => {
@@ -54,10 +56,11 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
               if (z === -1) stickers[5] = COLORS.back;
             } else {
               // Part 2: Scrambled side colors to show step-by-step alignment
-              if (x === 1) stickers[0] = COLORS.front;  // Right piece gets Green
-              if (x === -1) stickers[1] = COLORS.right;  // Left piece gets Orange
-              if (z === 1) stickers[4] = COLORS.back;    // Front piece gets Blue
-              if (z === -1) stickers[5] = COLORS.left;   // Back piece gets Red
+              // Sequence will solve: Green, Orange, Blue, Red
+              if (x === 1) stickers[0] = COLORS.front;  // Right piece is Green -> Front after U
+              if (x === -1) stickers[1] = COLORS.left;   // Left piece is Blue -> Back after U
+              if (z === 1) stickers[4] = COLORS.back;   // Front piece is Red -> Left after U
+              if (z === -1) stickers[5] = COLORS.right; // Back piece is Orange -> Right after U
             }
           }
         }
@@ -66,12 +69,18 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
       });
 
       if (subStep === 1) {
-        // Step 1 Part 2 Animation Sequence:
-        // 1. U (CW) aligns Right(Green) piece with Front(Green) center.
-        // 2. F2 flips it to bottom.
-        // 3. U (CW) aligns Left(Orange) piece (which moved to Back, then to Right) with Right(Orange) center.
-        // 4. R2 flips it to bottom.
-        moveQueue.current = ["U", "F2", "U", "R2"];
+        // Step 1 Part 2 Animation Sequence to solve full White Cross:
+        // 1. U (CW) aligns Green piece with Front center -> F2
+        // 2. U (CW) aligns Orange piece (now at Right) with Right center -> R2
+        // 3. U (CW) aligns Blue piece (now at Back) with Back center -> B2
+        // 4. U (CW) aligns Red piece (now at Left) with Left center -> L2
+        moveQueue.current = ["U", "F2", "R2", "U", "B2", "U'2", "L2"];
+        
+        // Reset camera position to default when starting
+        if (controlsRef.current) {
+          controlsRef.current.object.position.set(4, 4, 4);
+          controlsRef.current.update();
+        }
       } else {
         moveQueue.current = [];
       }
@@ -113,6 +122,25 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
       const timer = setTimeout(() => {
         const next = moveQueue.current.shift();
         if (next) performMove(next);
+        
+        // Final camera tilt after all moves are done
+        if (moveQueue.current.length === 0 && controlsRef.current) {
+          // Tilt camera to see the bottom white cross
+          setTimeout(() => {
+            const cam = controlsRef.current!.object;
+            const targetPos = new THREE.Vector3(4, -4, 4);
+            
+            // Simple animation loop for camera
+            let progress = 0;
+            const animateCam = () => {
+              progress += 0.02;
+              cam.position.lerp(targetPos, progress);
+              controlsRef.current?.update();
+              if (progress < 1) requestAnimationFrame(animateCam);
+            };
+            animateCam();
+          }, 1000);
+        }
       }, 800);
       return () => clearTimeout(timer);
     }
@@ -131,26 +159,23 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
 
       let s = [...cubie.stickers];
       
-      // Calculate how many 90-degree clockwise rotations to apply
-      // Three.js rotation: targetAngle < 0 is clockwise for R, U, F
+      // Calculate steps of 90 degrees CCW
+      // In Three.js, +angle is CCW.
       let angle = targetAngle;
       while (angle < 0) angle += Math.PI * 2;
-      while (angle >= Math.PI * 2) angle -= Math.PI * 2;
-      
-      // Convert angle to number of 90-degree steps (0, 1, 2, 3)
       const steps = Math.round(angle / (Math.PI / 2)) % 4;
 
       for (let i = 0; i < steps; i++) {
-        const prevS = [...s];
+        const p = [...s];
         if (axis === 'x') {
-          // X-axis CCW: Top(2)->Back(5), Back(5)->Bottom(3), Bottom(3)->Front(4), Front(4)->Top(2)
-          s[2] = prevS[4]; s[5] = prevS[2]; s[3] = prevS[5]; s[4] = prevS[3];
+          // CCW around X: Top(2)->Front(4)->Bottom(3)->Back(5)->Top(2)
+          s[4] = p[2]; s[3] = p[4]; s[5] = p[3]; s[2] = p[5];
         } else if (axis === 'y') {
-          // Y-axis CCW: Front(4)->Right(0), Right(0)->Back(5), Back(5)->Left(1), Left(1)->Front(4)
-          s[0] = prevS[4]; s[5] = prevS[0]; s[1] = prevS[5]; s[4] = prevS[1];
+          // CCW around Y: Front(4)->Right(0)->Back(5)->Left(1)->Front(4)
+          s[0] = p[4]; s[5] = p[0]; s[1] = p[5]; s[4] = p[1];
         } else if (axis === 'z') {
-          // Z-axis CCW: Top(2)->Left(1), Left(1)->Bottom(3), Bottom(3)->Right(0), Right(0)->Top(2)
-          s[1] = prevS[2]; s[3] = prevS[1]; s[0] = prevS[3]; s[2] = prevS[0];
+          // CCW around Z: Top(2)->Left(1)->Bottom(3)->Right(0)->Top(2)
+          s[1] = p[2]; s[3] = p[1]; s[0] = p[3]; s[2] = p[0];
         }
       }
 
@@ -172,7 +197,7 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
           onPointerDown={() => {}} 
           dragAngleRef={{ current: 0 } as any}
         />
-        <OrbitControls enableZoom={true} enablePan={false} />
+        <OrbitControls ref={controlsRef} enableZoom={true} enablePan={false} />
         <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={10} blur={2} far={4.5} />
       </Canvas>
     </div>
