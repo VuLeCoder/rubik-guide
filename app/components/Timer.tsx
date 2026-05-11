@@ -111,7 +111,7 @@ export default function Timer() {
     'text-slate-900';
 
   return (
-    <div className="relative flex flex-col items-center justify-center py-24 bg-white rounded-3xl shadow-md border border-slate-300 animate-in fade-in duration-500 select-none overflow-hidden min-h-[400px]">
+    <div className="relative flex flex-col items-center justify-center py-24 m-5 bg-white rounded-3xl shadow-md border border-slate-300 animate-in fade-in duration-500 select-none overflow-hidden min-h-[400px]">
       
       {/* Nút Help (?) góc trên bên phải */}
       <button 
