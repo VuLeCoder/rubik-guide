@@ -39,17 +39,13 @@ export default function Simulator() {
   // Sync ref with state
   const setActiveMoveWithRef: React.Dispatch<React.SetStateAction<AnimatingLayer | null>> = useCallback((value) => {
     setActiveMove((prevState) => {
-      // Nếu value là một hàm (prev => ...), ta thực thi hàm đó, nếu không thì lấy giá trị trực tiếp
       const newState = typeof value === 'function' ? (value as any)(prevState) : value;
-      
-      // Luôn đồng bộ giá trị mới nhất vào Ref
       activeMoveRef.current = newState;
-      
       return newState;
     });
   }, []);
 
-  const performMove = (move: string) => {
+  const performMove = useCallback((move: string) => {
     if (!controlsRef.current) return;
     isTransitioning.current = true;
     setHistory(prev => [...prev, move]);
@@ -94,14 +90,15 @@ export default function Simulator() {
       angle: 0, 
       target 
     });
-  };
+  }, [setActiveMoveWithRef]);
 
-  const processQueue = useCallback(() => {
-    if (moveQueue.current.length > 0 && !isTransitioning.current) {
+  // Handle queue processing via useEffect to ensure React has rendered the state updates
+  React.useEffect(() => {
+    if (!activeMove && !isTransitioning.current && moveQueue.current.length > 0) {
       const nextMove = moveQueue.current.shift();
       if (nextMove) performMove(nextMove);
     }
-  }, []);
+  }, [activeMove, performMove]);
 
   const finalizeMove = useCallback((axis: 'x' | 'y' | 'z', layer: number, targetAngle: number) => {
     setCubies(prev => prev.map(cubie => {
@@ -128,9 +125,7 @@ export default function Simulator() {
 
     setActiveMoveWithRef(null);
     isTransitioning.current = false;
-    
-    setTimeout(processQueue, 0);
-  }, [processQueue]);
+  }, [setActiveMoveWithRef]);
 
   // Stable callback for pointer down
   const onPointerDown = useCallback((e: any) => {
@@ -231,12 +226,12 @@ export default function Simulator() {
   }, []);
 
   const handleMove = useCallback((move: string) => {
-    if (isTransitioning.current) {
+    if (isTransitioning.current || activeMove) {
       moveQueue.current.push(move);
     } else {
       performMove(move);
     }
-  }, []);
+  }, [activeMove, performMove]);
 
   const resetAll = useCallback(() => {
     setCubies(generateInitialState());
