@@ -4,7 +4,7 @@ export const RUBIK_CONFIG = {
   LAYOUT: {
     CUBIE_SIZE: 0.98,
     CUBIE_RADIUS: 0.06,
-    CUBIE_SMOOTHNESS: 4,
+    CUBIE_SMOOTHNESS: 1,
     STICKER_OFFSET: 0.495,
     STICKER_SIZE: 0.8
   },
@@ -19,7 +19,7 @@ export const RUBIK_CONFIG = {
   SCENE: {
     CAMERA_POS: [5, 5, 5] as [number, number, number],
     CAMERA_FOV: 55,
-    LIGHT_INTENSITY: 0.5,
+    LIGHT_INTENSITY: 3.5,
     SHADOW: {
       POSITION: [0, -2.2, 0] as [number, number, number],
       OPACITY: 0.1,

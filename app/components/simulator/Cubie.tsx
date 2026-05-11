@@ -28,6 +28,16 @@ const rotations = [
   [0, 0, 0], [0, Math.PI, 0],
 ] as const;
 
+const stickerMaterials = Object.entries(COLORS).reduce((acc, [name, hex]) => {
+  acc[hex] = new THREE.MeshStandardMaterial({ 
+    color: hex, 
+    roughness: 0.3, 
+    metalness: 0.1 
+  });
+  return acc;
+}, {} as Record<string, THREE.MeshStandardMaterial>);
+
+
 export const Cubie = memo(function Cubie({ 
   stickers, 
   position, 
@@ -58,7 +68,8 @@ export const Cubie = memo(function Cubie({
             rotation={rotations[i]}
             onPointerDown={onPointerDown}
             geometry={stickerGeometry}
-            material={material}
+            material={stickerMaterials[col]}
+            // material={material}
           />
         );
       })}

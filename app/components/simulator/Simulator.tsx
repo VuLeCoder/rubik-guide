@@ -257,12 +257,16 @@ export default function Simulator() {
             camera={{ position: SCENE.CAMERA_POS, fov: SCENE.CAMERA_FOV }} 
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
-            dpr={[1, 2]} // Limit pixel ratio for performance
+            // dpr={[1, 2]} // Limit pixel ratio for performance
+            dpr={1}
             gl={{ antialias: true, preserveDrawingBuffer: true }}
           >
             <AdaptiveDpr pixelated />
             <AdaptiveEvents />
-            <Environment preset="city" />
+            {/* <Environment preset="city" /> */}
+
+            <pointLight position={[10, 10, 10]} intensity={1.5} />
+            <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
             <ambientLight intensity={SCENE.LIGHT_INTENSITY} />
             
             <RubikCube
@@ -281,7 +285,8 @@ export default function Simulator() {
               scale={SCENE.SHADOW.SCALE}
               blur={SCENE.SHADOW.BLUR}
               far={10}
-              resolution={256} // Lower resolution for better performance
+              resolution={128} // <--- GIẢM TỪ 256 XUỐNG 128
+              frames={1} // <--- CHỈ VẼ SHADOW 1 LẦN (giúp giảm tải cực lớn khi xoay)
             />
           </Canvas>
         </div>

@@ -7,7 +7,7 @@ import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { RUBIK_CONFIG, COLORS, generateInitialState, CubieData, AnimatingLayer } from './constants';
 import { RubikCube } from './RubikCube';
 
-const { PHYSICS } = RUBIK_CONFIG;
+const { SCENE, PHYSICS } = RUBIK_CONFIG;
 
 interface StaticCubeProps {
   stepId: number;
@@ -171,8 +171,10 @@ export const StaticCube = ({ stepId, subStep, isPaused = false, resetKey = 0 }: 
   return (
     <div className="w-full h-full min-h-[350px] relative">
       <Canvas camera={{ position: [4, 4, 4], fov }} frameloop={(activeMove || !isPaused) ? "always" : "demand"} gl={{ antialias: false, powerPreference: 'high-performance' }}>
-        <Environment preset="city" />
-        <ambientLight intensity={0.5} />
+        {/* <Environment preset="city" /> */}
+        <pointLight position={[10, 10, 10]} intensity={1.5} />
+        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
+        <ambientLight intensity={SCENE.LIGHT_INTENSITY} />
         <RubikCube
           cubies={cubies} 
           activeMove={activeMove} 
@@ -182,7 +184,7 @@ export const StaticCube = ({ stepId, subStep, isPaused = false, resetKey = 0 }: 
           dragAngleRef={{ current: 0 } as any}
         />
         <OrbitControls ref={controlsRef} enableZoom={true} enablePan={false} />
-        <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={10} blur={2} far={4.5} resolution={128} />
+        <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={10} blur={2} far={4.5} resolution={128} frames={1} />
       </Canvas>
     </div>
   );
