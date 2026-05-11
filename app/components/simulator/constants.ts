@@ -37,7 +37,7 @@ export const COLORS = {
   right: '#F97316',
   left: '#EF4444',
   inner: '#1E293B',
-  gray: '#475569' // Màu xám cho mode Learn
+  gray: '#475569'
 };
 
 export interface CubieData {
