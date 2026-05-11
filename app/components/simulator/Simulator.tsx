@@ -37,9 +37,63 @@ export default function Simulator() {
   } | null>(null);
 
   // Sync ref with state
-  const setActiveMoveWithRef = (move: AnimatingLayer | null) => {
-    activeMoveRef.current = move;
-    setActiveMove(move);
+  const setActiveMoveWithRef: React.Dispatch<React.SetStateAction<AnimatingLayer | null>> = useCallback((value) => {
+    setActiveMove((prevState) => {
+      // Nếu value là một hàm (prev => ...), ta thực thi hàm đó, nếu không thì lấy giá trị trực tiếp
+      const newState = typeof value === 'function' ? (value as any)(prevState) : value;
+      
+      // Luôn đồng bộ giá trị mới nhất vào Ref
+      activeMoveRef.current = newState;
+      
+      return newState;
+    });
+  }, []);
+
+  const performMove = (move: string) => {
+    if (!controlsRef.current) return;
+    isTransitioning.current = true;
+    setHistory(prev => [...prev, move]);
+
+    const camera = controlsRef.current.object;
+    const isPrime = move.includes("'");
+    const m = move.replace("'", "");
+
+    const getClosestAxis = (vec: THREE.Vector3) => {
+      const axes = [
+        { axis: 'x', dot: vec.dot(new THREE.Vector3(1, 0, 0)) },
+        { axis: 'x', dot: vec.dot(new THREE.Vector3(-1, 0, 0)) },
+        { axis: 'y', dot: vec.dot(new THREE.Vector3(0, 1, 0)) },
+        { axis: 'y', dot: vec.dot(new THREE.Vector3(0, -1, 0)) },
+        { axis: 'z', dot: vec.dot(new THREE.Vector3(0, 0, 1)) },
+        { axis: 'z', dot: vec.dot(new THREE.Vector3(0, 0, -1)) },
+      ];
+      return axes.reduce((prev, curr) => Math.abs(curr.dot) > Math.abs(prev.dot) ? curr : prev);
+    };
+
+    let directionInfo;
+    let target = ["R", "U", "F", "S", "E"].includes(m) ? -Math.PI / 2 : Math.PI / 2;
+    let layer = 0;
+
+    if (["R", "L", "M"].includes(m)) {
+      directionInfo = getClosestAxis(new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion));
+      layer = m === "R" ? 1 : m === "L" ? -1 : 0;
+    } else if (["U", "D", "E"].includes(m)) {
+      directionInfo = getClosestAxis(new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion));
+      layer = m === "U" ? 1 : m === "D" ? -1 : 0;
+    } else {
+      directionInfo = getClosestAxis(new THREE.Vector3(0, 0, 1).applyQuaternion(camera.quaternion));
+      layer = m === "F" ? 1 : m === "B" ? -1 : 0;
+    }
+
+    if (directionInfo.dot < 0) { layer *= -1; target *= -1; }
+    if (isPrime) target *= -1;
+
+    setActiveMoveWithRef({ 
+      axis: directionInfo.axis as 'x' | 'y' | 'z', 
+      layer, 
+      angle: 0, 
+      target 
+    });
   };
 
   const processQueue = useCallback(() => {
@@ -175,53 +229,6 @@ export default function Simulator() {
     }
     dragStart.current = null;
   }, []);
-
-  const performMove = (move: string) => {
-    if (!controlsRef.current) return;
-    isTransitioning.current = true;
-    setHistory(prev => [...prev, move]);
-
-    const camera = controlsRef.current.object;
-    const isPrime = move.includes("'");
-    const m = move.replace("'", "");
-
-    const getClosestAxis = (vec: THREE.Vector3) => {
-      const axes = [
-        { axis: 'x', dot: vec.dot(new THREE.Vector3(1, 0, 0)) },
-        { axis: 'x', dot: vec.dot(new THREE.Vector3(-1, 0, 0)) },
-        { axis: 'y', dot: vec.dot(new THREE.Vector3(0, 1, 0)) },
-        { axis: 'y', dot: vec.dot(new THREE.Vector3(0, -1, 0)) },
-        { axis: 'z', dot: vec.dot(new THREE.Vector3(0, 0, 1)) },
-        { axis: 'z', dot: vec.dot(new THREE.Vector3(0, 0, -1)) },
-      ];
-      return axes.reduce((prev, curr) => Math.abs(curr.dot) > Math.abs(prev.dot) ? curr : prev);
-    };
-
-    let directionInfo;
-    let target = ["R", "U", "F", "S", "E"].includes(m) ? -Math.PI / 2 : Math.PI / 2;
-    let layer = 0;
-
-    if (["R", "L", "M"].includes(m)) {
-      directionInfo = getClosestAxis(new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion));
-      layer = m === "R" ? 1 : m === "L" ? -1 : 0;
-    } else if (["U", "D", "E"].includes(m)) {
-      directionInfo = getClosestAxis(new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion));
-      layer = m === "U" ? 1 : m === "D" ? -1 : 0;
-    } else {
-      directionInfo = getClosestAxis(new THREE.Vector3(0, 0, 1).applyQuaternion(camera.quaternion));
-      layer = m === "F" ? 1 : m === "B" ? -1 : 0;
-    }
-
-    if (directionInfo.dot < 0) { layer *= -1; target *= -1; }
-    if (isPrime) target *= -1;
-
-    setActiveMoveWithRef({ 
-      axis: directionInfo.axis as 'x' | 'y' | 'z', 
-      layer, 
-      angle: 0, 
-      target 
-    });
-  };
 
   const handleMove = useCallback((move: string) => {
     if (isTransitioning.current) {
