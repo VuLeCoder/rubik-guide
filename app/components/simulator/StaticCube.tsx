@@ -19,9 +19,20 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
   const [cubies, setCubies] = useState<CubieData[]>([]);
   const [activeMove, setActiveMove] = useState<AnimatingLayer | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [fov, setFov] = useState(55);
   const moveQueue = useRef<string[]>([]);
   const initialMoveQueue = useRef<string[]>([]);
   const controlsRef = useRef<OrbitControlsImpl>(null);
+
+  // Responsive FOV adjustment
+  useEffect(() => {
+    const handleResize = () => {
+      setFov(window.innerWidth < 768 ? 65 : 55);
+    };
+    handleResize(); // Set initial
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const initCube = useCallback(() => {
     let initialState = generateInitialState(true);
@@ -168,7 +179,7 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
 
   return (
     <div className="w-full h-full min-h-[350px] relative group">
-      <Canvas camera={{ position: [4, 4, 4], fov: 55 }} frameloop={activeMove ? "always" : "demand"} gl={{ antialias: false, powerPreference: 'high-performance' }}>
+      <Canvas camera={{ position: [4, 4, 4], fov }} frameloop={activeMove ? "always" : "demand"} gl={{ antialias: false, powerPreference: 'high-performance' }}>
         <Environment preset="city" />
         <ambientLight intensity={0.5} />
         <RubikCube
