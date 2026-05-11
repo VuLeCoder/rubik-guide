@@ -82,7 +82,7 @@ export default function Home() {
         )}
       </nav>
 
-      <main className="max-w-5xl mx-auto p-6 md:p-10">
+      <main className="max-w-6xl mx-auto p-4 sm:p-6 md:p-10">
         <div className="transition-all duration-500">
           <div className={activeTab === 'simulator' ? 'block' : 'hidden'}>
             <Simulator />
@@ -96,7 +96,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="text-center py-10 border-t border-slate-300 text-slate-600 text-xs font-medium">
+      <footer className="text-center py-8 md:py-10 border-t border-slate-300 text-slate-600 text-[10px] md:text-xs font-medium px-4">
         © 2026 RubikCommunity • Connecting Cubes, Building Community
       </footer>
     </div>

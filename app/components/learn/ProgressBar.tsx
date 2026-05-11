@@ -6,7 +6,7 @@ interface ProgressBarProps {
 }
 
 export const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => (
-  <div className="h-2 bg-slate-200 rounded-full mb-12 overflow-hidden">
+  <div className="h-1.5 md:h-2 bg-slate-200 rounded-full mb-6 md:mb-8 lg:mb-0 overflow-hidden">
     <motion.div 
       className="h-full bg-amber-400"
       initial={{ width: 0 }}

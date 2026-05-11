@@ -30,23 +30,30 @@ export default function Learn() {
   const step = STEPS[currentStep];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <StepHeader currentStep={currentStep} />
-      
-      <ProgressBar currentStep={currentStep} totalSteps={STEPS.length} />
+    <div className="max-w-4xl mx-auto px-0 sm:px-6 py-4 md:py-8">
+      {/* Header & Progress (Stay at top) */}
+      <div className="px-4 sm:px-0 mb-6 md:mb-10">
+        <StepHeader currentStep={currentStep} />
+        <ProgressBar currentStep={currentStep} totalSteps={STEPS.length} />
+      </div>
 
-      <StepCard 
-        step={step} 
-        currentSubStep={currentSubStep} 
-        direction={direction} 
-        onSubStep={handleSubStep} 
-      />
+      {/* Slide/Content */}
+      <div className="space-y-6">
+        <StepCard 
+          step={step} 
+          currentSubStep={currentSubStep} 
+          direction={direction} 
+          onSubStep={handleSubStep} 
+        />
 
-      <StepNavigation 
-        currentStep={currentStep} 
-        totalSteps={STEPS.length} 
-        onPaginate={paginate} 
-      />
+        <div className="px-4 sm:px-0">
+          <StepNavigation 
+            currentStep={currentStep} 
+            totalSteps={STEPS.length} 
+            onPaginate={paginate} 
+          />
+        </div>
+      </div>
     </div>
   );
 }
