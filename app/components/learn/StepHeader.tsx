@@ -13,10 +13,5 @@ export const StepHeader = ({ currentStep }: StepHeaderProps) => (
       </h2>
       <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5 md:mt-1">Hướng dẫn cho người mới</p>
     </div>
-    <div className="text-right lg:text-left">
-      <span className="text-3xl md:text-4xl lg:text-6xl font-black text-slate-200 block lg:mt-2">
-        0{currentStep + 1}
-      </span>
-    </div>
   </div>
 );

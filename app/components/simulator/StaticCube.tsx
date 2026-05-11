@@ -168,7 +168,7 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
 
   return (
     <div className="w-full h-full min-h-[350px] relative group">
-      <Canvas camera={{ position: [4, 4, 4], fov: 55 }}>
+      <Canvas camera={{ position: [4, 4, 4], fov: 55 }} frameloop={activeMove ? "always" : "demand"} gl={{ antialias: false, powerPreference: 'high-performance' }}>
         <Environment preset="city" />
         <ambientLight intensity={0.5} />
         <RubikCube
@@ -180,7 +180,7 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
           dragAngleRef={{ current: 0 } as any}
         />
         <OrbitControls ref={controlsRef} enableZoom={true} enablePan={false} />
-        <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={10} blur={2} far={4.5} />
+        <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={10} blur={2} far={4.5} resolution={128} />
       </Canvas>
 
       {/* Playback Controls */}
