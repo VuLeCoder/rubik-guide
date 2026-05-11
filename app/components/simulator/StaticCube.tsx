@@ -4,7 +4,6 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { Play, Pause, RotateCcw } from 'lucide-react';
 import { RUBIK_CONFIG, COLORS, generateInitialState, CubieData, AnimatingLayer } from './constants';
 import { RubikCube } from './RubikCube';
 
@@ -13,12 +12,13 @@ const { PHYSICS } = RUBIK_CONFIG;
 interface StaticCubeProps {
   stepId: number;
   subStep: number;
+  isPaused?: boolean;
+  resetKey?: number;
 }
 
-export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
+export const StaticCube = ({ stepId, subStep, isPaused = false, resetKey = 0 }: StaticCubeProps) => {
   const [cubies, setCubies] = useState<CubieData[]>([]);
   const [activeMove, setActiveMove] = useState<AnimatingLayer | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
   const [fov, setFov] = useState(55);
   const moveQueue = useRef<string[]>([]);
   const initialMoveQueue = useRef<string[]>([]);
@@ -29,7 +29,7 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
     const handleResize = () => {
       setFov(window.innerWidth < 768 ? 65 : 55);
     };
-    handleResize(); // Set initial
+    handleResize(); 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -37,17 +37,13 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
   const initCube = useCallback(() => {
     let initialState = generateInitialState(true);
     
-    // Step 1: Daisy and White Cross
     if (stepId === 1) {
       initialState = initialState.map(cubie => {
         const { x, y, z } = cubie.pos;
         const stickers = [...cubie.stickers];
-        
-        // Centers: Yellow on Top (y=1), White on Bottom (y=-1)
         if (x === 0 && y === 1 && z === 0) stickers[2] = COLORS.bottom;
         if (x === 0 && y === -1 && z === 0) stickers[3] = COLORS.top;
 
-        // Show side centers only in Part 2
         if (subStep === 1 && y === 0) {
           if (x === 1 && z === 0) stickers[0] = COLORS.right;
           if (x === -1 && z === 0) stickers[1] = COLORS.left;
@@ -55,19 +51,16 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
           if (z === -1 && x === 0) stickers[5] = COLORS.back;
         }
 
-        // White Edges on Top Layer (y = 1)
         if (y === 1) {
           const isEdge = (Math.abs(x) === 1 && z === 0) || (x === 0 && Math.abs(z) === 1);
           if (isEdge) {
-            stickers[2] = COLORS.top; // Always white on top for Daisy
-            
-              if (x === 1) stickers[0] = COLORS.right;
-              if (x === -1) stickers[1] = COLORS.front;
-              if (z === 1) stickers[4] = COLORS.left;
-              if (z === -1) stickers[5] = COLORS.back;
+            stickers[2] = COLORS.top;
+            if (x === 1) stickers[0] = COLORS.right;
+            if (x === -1) stickers[1] = COLORS.front;
+            if (z === 1) stickers[4] = COLORS.left;
+            if (z === -1) stickers[5] = COLORS.back;
           }
         }
-
         return { ...cubie, stickers };
       });
 
@@ -89,9 +82,7 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
 
     setCubies(initialState);
     setActiveMove(null);
-    setIsPaused(false);
     
-    // Reset camera position to default when starting
     if (controlsRef.current) {
       controlsRef.current.object.position.set(4, 4, 4);
       controlsRef.current.update();
@@ -100,7 +91,7 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
 
   useEffect(() => {
     initCube();
-  }, [initCube]);
+  }, [initCube, resetKey]); // Also re-init on resetKey change
 
   const performMove = useCallback((move: string) => {
     const isPrime = move.includes("'");
@@ -178,8 +169,8 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
   }, []);
 
   return (
-    <div className="w-full h-full min-h-[350px] relative group">
-      <Canvas camera={{ position: [4, 4, 4], fov }} frameloop={activeMove ? "always" : "demand"} gl={{ antialias: false, powerPreference: 'high-performance' }}>
+    <div className="w-full h-full min-h-[350px] relative">
+      <Canvas camera={{ position: [4, 4, 4], fov }} frameloop={(activeMove || !isPaused) ? "always" : "demand"} gl={{ antialias: false, powerPreference: 'high-performance' }}>
         <Environment preset="city" />
         <ambientLight intensity={0.5} />
         <RubikCube
@@ -193,26 +184,6 @@ export const StaticCube = ({ stepId, subStep }: StaticCubeProps) => {
         <OrbitControls ref={controlsRef} enableZoom={true} enablePan={false} />
         <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={10} blur={2} far={4.5} resolution={128} />
       </Canvas>
-
-      {/* Playback Controls */}
-      {subStep === 1 && stepId === 1 && (
-        <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={() => setIsPaused(!isPaused)}
-            className="p-2 bg-slate-900/80 hover:bg-slate-900 text-white rounded-lg shadow-lg backdrop-blur-sm transition-all active:scale-95"
-            title={isPaused ? "Tiếp tục" : "Tạm dừng"}
-          >
-            {isPaused ? <Play size={18} /> : <Pause size={18} />}
-          </button>
-          <button
-            onClick={initCube}
-            className="p-2 bg-slate-900/80 hover:bg-slate-900 text-white rounded-lg shadow-lg backdrop-blur-sm transition-all active:scale-95"
-            title="Reset hoạt ảnh"
-          >
-            <RotateCcw size={18} />
-          </button>
-        </div>
-      )}
     </div>
   );
 };

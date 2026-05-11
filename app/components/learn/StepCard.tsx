@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Pause, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
 import { StaticCube } from '../simulator/StaticCube';
 import { Step } from './types';
 
@@ -11,7 +12,17 @@ interface StepCardProps {
 }
 
 export const StepCard = ({ step, currentSubStep, direction, onSubStep }: StepCardProps) => {
+  const [isPaused, setIsPaused] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
   const subStepData = step.subSteps[currentSubStep];
+
+  // Animation only for Step 1, Part 2
+  const hasAnimation = step.id === 1 && currentSubStep === 1;
+
+  const handleReset = () => {
+    setResetKey(prev => prev + 1);
+    setIsPaused(false);
+  };
 
   return (
     <div className="relative min-h-[500px] md:min-h-[450px]">
@@ -57,14 +68,36 @@ export const StepCard = ({ step, currentSubStep, direction, onSubStep }: StepCar
                   {subStepData.content}
                 </p>
 
-                {subStepData.formula && (
-                  <div className="bg-slate-50 rounded-xl md:rounded-2xl p-4 md:p-5 border border-slate-100">
-                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5 md:mb-2">Công thức</span>
-                    <code className="text-base md:text-lg font-mono font-black text-amber-600 break-words">
-                      {subStepData.formula}
-                    </code>
-                  </div>
-                )}
+                <div className="space-y-4">
+                  {subStepData.formula && (
+                    <div className="bg-slate-50 rounded-xl md:rounded-2xl p-4 md:p-5 border border-slate-100">
+                      <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5 md:mb-2">Công thức</span>
+                      <code className="text-base md:text-lg font-mono font-black text-amber-600 break-words">
+                        {subStepData.formula}
+                      </code>
+                    </div>
+                  )}
+
+                  {/* External Playback Controls */}
+                  {hasAnimation && (
+                    <div className="flex items-center gap-3 p-1">
+                      <button
+                        onClick={() => setIsPaused(!isPaused)}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold transition-all active:scale-95 hover:bg-slate-800 shadow-md"
+                      >
+                        {isPaused ? <Play size={14} fill="currentColor" /> : <Pause size={14} fill="currentColor" />}
+                        {isPaused ? "Tiếp tục" : "Tạm dừng"}
+                      </button>
+                      <button
+                        onClick={handleReset}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold transition-all active:scale-95 hover:bg-slate-200 border border-slate-200"
+                      >
+                        <RotateCcw size={14} />
+                        Làm lại
+                      </button>
+                    </div>
+                  )}
+                </div>
 
                 {/* Sub-step navigation */}
                 {step.subSteps.length > 1 && (
@@ -94,10 +127,13 @@ export const StepCard = ({ step, currentSubStep, direction, onSubStep }: StepCar
                 )}
               </div>
 
-              {/* Cube Container: Fixed height issues on mobile */}
               <div className="order-1 md:order-2 bg-[#1f2a44] rounded-[20px] md:rounded-[24px] h-[300px] sm:h-[350px] md:h-[400px] shadow-inner relative overflow-hidden border border-slate-100 group">
-                 <StaticCube stepId={step.id} subStep={currentSubStep} />
-                 {/* Zoom Hint */}
+                 <StaticCube 
+                    stepId={step.id} 
+                    subStep={currentSubStep} 
+                    isPaused={isPaused} 
+                    resetKey={resetKey} 
+                  />
                  <div className="absolute bottom-3 left-3 text-[9px] md:text-[10px] font-bold text-slate-400 opacity-60 md:opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-900/50 px-2 py-1 rounded">
                    Xoay & zoom khối 3D
                  </div>
