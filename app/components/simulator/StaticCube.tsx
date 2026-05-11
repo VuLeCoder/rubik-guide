@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+import { View, OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { RUBIK_CONFIG, COLORS, generateInitialState, CubieData, AnimatingLayer } from './constants';
@@ -16,23 +15,13 @@ interface StaticCubeProps {
   resetKey?: number;
 }
 
-export const StaticCube = ({ stepId, subStep, isPaused = false, resetKey = 0 }: StaticCubeProps) => {
+// Internal component that contains the 3D scene logic
+const StaticCubeContent = ({ stepId, subStep, isPaused = false, resetKey = 0 }: StaticCubeProps) => {
   const [cubies, setCubies] = useState<CubieData[]>([]);
   const [activeMove, setActiveMove] = useState<AnimatingLayer | null>(null);
-  const [fov, setFov] = useState(55);
   const moveQueue = useRef<string[]>([]);
   const initialMoveQueue = useRef<string[]>([]);
   const controlsRef = useRef<OrbitControlsImpl>(null);
-
-  // Responsive FOV adjustment
-  useEffect(() => {
-    const handleResize = () => {
-      setFov(window.innerWidth < 768 ? 65 : 55);
-    };
-    handleResize(); 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const initCube = useCallback(() => {
     let initialState = generateInitialState(true);
@@ -91,7 +80,7 @@ export const StaticCube = ({ stepId, subStep, isPaused = false, resetKey = 0 }: 
 
   useEffect(() => {
     initCube();
-  }, [initCube, resetKey]); // Also re-init on resetKey change
+  }, [initCube, resetKey]);
 
   const performMove = useCallback((move: string) => {
     const isPrime = move.includes("'");
@@ -169,23 +158,31 @@ export const StaticCube = ({ stepId, subStep, isPaused = false, resetKey = 0 }: 
   }, []);
 
   return (
-    <div className="w-full h-full min-h-[350px] relative">
-      <Canvas camera={{ position: [4, 4, 4], fov }} frameloop={(activeMove || !isPaused) ? "always" : "demand"} gl={{ antialias: false, powerPreference: 'high-performance' }}>
-        {/* <Environment preset="city" /> */}
-        <pointLight position={[10, 10, 10]} intensity={1.5} />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
-        <ambientLight intensity={SCENE.LIGHT_INTENSITY} />
-        <RubikCube
-          cubies={cubies} 
-          activeMove={activeMove} 
-          setActiveMove={setActiveMove}
-          onAnimationEnd={finalizeMove} 
-          onPointerDown={() => {}} 
-          dragAngleRef={{ current: 0 } as any}
-        />
-        <OrbitControls ref={controlsRef} enableZoom={true} enablePan={false} />
-        <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={10} blur={2} far={4.5} resolution={128} frames={1} />
-      </Canvas>
+    <>
+      <pointLight position={[10, 10, 10]} intensity={1.5} />
+      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
+      <ambientLight intensity={SCENE.LIGHT_INTENSITY} />
+      <RubikCube
+        cubies={cubies} 
+        activeMove={activeMove} 
+        setActiveMove={setActiveMove}
+        onAnimationEnd={finalizeMove} 
+        onPointerDown={() => {}} 
+        dragAngleRef={{ current: 0 } as any}
+      />
+      <OrbitControls ref={controlsRef} enableZoom={true} enablePan={false} />
+      <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={10} blur={2} far={4.5} resolution={128} frames={1} />
+    </>
+  );
+};
+
+export const StaticCube = (props: StaticCubeProps) => {
+  return (
+    <div className="w-full h-full relative">
+      <View className="w-full h-full">
+        <StaticCubeContent {...props} />
+      </View>
     </div>
   );
 };
+
