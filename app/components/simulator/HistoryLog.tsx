@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface HistoryLogProps {
   history: string[];
@@ -6,7 +6,7 @@ interface HistoryLogProps {
   scrollRef: React.RefObject<HTMLDivElement>;
 }
 
-export function HistoryLog({ history, onReset, scrollRef }: HistoryLogProps) {
+export const HistoryLog = memo(function HistoryLog({ history, onReset, scrollRef }: HistoryLogProps) {
   return (
     <div className="bg-[#1f2a44] rounded-[24px] p-5 border border-slate-200 shadow-sm overflow-hidden">
       <h3 className="text-[14px] font-black text-slate-400 mb-3 uppercase tracking-widest">History Log</h3>
@@ -32,4 +32,4 @@ export function HistoryLog({ history, onReset, scrollRef }: HistoryLogProps) {
       </button>
     </div>
   );
-}
+});

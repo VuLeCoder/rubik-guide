@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useCallback, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+import { OrbitControls, Environment, ContactShadows, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
 import * as THREE from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
@@ -22,7 +22,11 @@ export default function Simulator() {
   const [cubies, setCubies] = useState<CubieData[]>(generateInitialState());
   const [history, setHistory] = useState<string[]>([]);
   const [activeMove, setActiveMove] = useState<AnimatingLayer | null>(null);
+  
+  // Use a ref for activeMove to keep callbacks stable
+  const activeMoveRef = useRef<AnimatingLayer | null>(null);
   const isTransitioning = useRef(false);
+  const moveQueue = useRef<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const dragAngleRef = useRef(0);
@@ -31,6 +35,19 @@ export default function Simulator() {
     normal: THREE.Vector3;
     cubiePos: THREE.Vector3
   } | null>(null);
+
+  // Sync ref with state
+  const setActiveMoveWithRef = (move: AnimatingLayer | null) => {
+    activeMoveRef.current = move;
+    setActiveMove(move);
+  };
+
+  const processQueue = useCallback(() => {
+    if (moveQueue.current.length > 0 && !isTransitioning.current) {
+      const nextMove = moveQueue.current.shift();
+      if (nextMove) performMove(nextMove);
+    }
+  }, []);
 
   const finalizeMove = useCallback((axis: 'x' | 'y' | 'z', layer: number, targetAngle: number) => {
     setCubies(prev => prev.map(cubie => {
@@ -55,14 +72,16 @@ export default function Simulator() {
       return { ...cubie, pos: newPos, stickers: s };
     }));
 
-    setActiveMove(null);
+    setActiveMoveWithRef(null);
     isTransitioning.current = false;
-  }, []);
-// ============================================
-// ============================================
-  const onPointerDown = (e: any) => {
+    
+    setTimeout(processQueue, 0);
+  }, [processQueue]);
+
+  // Stable callback for pointer down
+  const onPointerDown = useCallback((e: any) => {
     e.stopPropagation();
-    if (activeMove || isTransitioning.current) return;
+    if (activeMoveRef.current || isTransitioning.current) return;
     if (!e.object) return;
 
     if (controlsRef.current) {
@@ -76,9 +95,9 @@ export default function Simulator() {
       normal: worldNormal,
       cubiePos: e.object.parent.position.clone().round()
     };
-  };
+  }, []); // No dependencies makes this stable
 
-  const onPointerMove = (e: any) => {
+  const onPointerMove = useCallback((e: any) => {
     if (!dragStart.current || !controlsRef.current) return;
 
     const canvas = controlsRef.current!.domElement;
@@ -101,11 +120,11 @@ export default function Simulator() {
     if (!intersectPoint) return;
 
     const v3d = tempVector.subVectors(intersectPoint, dragStart.current.point);
-    if (v3d.length() < PHYSICS.DRAG_DISTANCE_MIN && !activeMove) return; 
+    if (v3d.length() < PHYSICS.DRAG_DISTANCE_MIN && !activeMoveRef.current) return; 
 
     const A_raw = new THREE.Vector3().crossVectors(dragStart.current.normal, v3d);
 
-    if (!activeMove) {
+    if (!activeMoveRef.current) {
       let maxVal = -1;
       let bestAxis: 'x' | 'y' | 'z' = 'x';
 
@@ -119,26 +138,26 @@ export default function Simulator() {
       });
 
       dragAngleRef.current = 0;
-      setActiveMove({
+      setActiveMoveWithRef({
         axis: bestAxis,
         layer: dragStart.current.cubiePos[bestAxis],
         target: 0,
         angle: 0,
         isDragging: true
       });
-    } else if (activeMove.isDragging) {
-      const angleRaw = A_raw[activeMove.axis];
+    } else if (activeMoveRef.current.isDragging) {
+      const angleRaw = A_raw[activeMoveRef.current.axis];
       const currentAngle = (angleRaw / PHYSICS.DRAG_SENSITIVITY) * (Math.PI / 2);
       dragAngleRef.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, currentAngle));
     }
-  };
+  }, []);
 
-  const onPointerUp = () => {
+  const onPointerUp = useCallback(() => {
     if (controlsRef.current) {
       controlsRef.current.enabled = true;
     }
 
-    if (activeMove?.isDragging) { 
+    if (activeMoveRef.current?.isDragging) { 
       const finalAngle = dragAngleRef.current;
       let finalTarget = 0;
 
@@ -148,18 +167,17 @@ export default function Simulator() {
         finalTarget = -Math.PI / 2;
       }
       
-      setActiveMove(prev => prev ? { 
-        ...prev, 
+      setActiveMoveWithRef({ 
+        ...activeMoveRef.current, 
         target: finalTarget, 
         isDragging: false
-      } : null);
+      });
     }
     dragStart.current = null;
-  };
-// ============================================
-// ============================================
-  const handleMove = (move: string) => {
-    if (isTransitioning.current || !controlsRef.current) return;
+  }, []);
+
+  const performMove = (move: string) => {
+    if (!controlsRef.current) return;
     isTransitioning.current = true;
     setHistory(prev => [...prev, move]);
 
@@ -197,7 +215,7 @@ export default function Simulator() {
     if (directionInfo.dot < 0) { layer *= -1; target *= -1; }
     if (isPrime) target *= -1;
 
-    setActiveMove({ 
+    setActiveMoveWithRef({ 
       axis: directionInfo.axis as 'x' | 'y' | 'z', 
       layer, 
       angle: 0, 
@@ -205,10 +223,21 @@ export default function Simulator() {
     });
   };
 
-  const resetAll = () => {
+  const handleMove = useCallback((move: string) => {
+    if (isTransitioning.current) {
+      moveQueue.current.push(move);
+    } else {
+      performMove(move);
+    }
+  }, []);
+
+  const resetAll = useCallback(() => {
     setCubies(generateInitialState());
     setHistory([]);
-  };
+    moveQueue.current = [];
+    setActiveMoveWithRef(null);
+    isTransitioning.current = false;
+  }, []);
 
   return (
     <div className="h-auto p-2 lg:p-4 flex items-center justify-center font-sans overflow-hidden">
@@ -226,14 +255,18 @@ export default function Simulator() {
             camera={{ position: SCENE.CAMERA_POS, fov: SCENE.CAMERA_FOV }} 
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
+            dpr={[1, 2]} // Limit pixel ratio for performance
+            gl={{ antialias: true, preserveDrawingBuffer: true }}
           >
+            <AdaptiveDpr pixelated />
+            <AdaptiveEvents />
             <Environment preset="city" />
             <ambientLight intensity={SCENE.LIGHT_INTENSITY} />
             
             <RubikCube
               cubies={cubies} 
               activeMove={activeMove} 
-              setActiveMove={setActiveMove}
+              setActiveMove={setActiveMoveWithRef}
               onAnimationEnd={finalizeMove} 
               onPointerDown={onPointerDown} 
               dragAngleRef={dragAngleRef}
@@ -245,6 +278,8 @@ export default function Simulator() {
               opacity={SCENE.SHADOW.OPACITY}
               scale={SCENE.SHADOW.SCALE}
               blur={SCENE.SHADOW.BLUR}
+              far={10}
+              resolution={256} // Lower resolution for better performance
             />
           </Canvas>
         </div>

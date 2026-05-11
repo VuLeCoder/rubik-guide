@@ -1,4 +1,4 @@
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect, memo } from 'react';
 import { useFrame, RootState } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Cubie } from './Cubie';
@@ -6,7 +6,7 @@ import { RUBIK_CONFIG, CubieData, RubikCubeProps } from './constants';
 
 const {PHYSICS} = RUBIK_CONFIG;
 
-export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, onPointerDown, dragAngleRef }: RubikCubeProps) {
+export const RubikCube = memo(function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, onPointerDown, dragAngleRef }: RubikCubeProps) {
   const rotationGroupRef = useRef<THREE.Group>(null);
   const rotationAngleRef = useRef(0);
   const hasFinishedRef = useRef(false);
@@ -97,4 +97,4 @@ export function RubikCube({ cubies, activeMove, setActiveMove, onAnimationEnd, o
       </group>
     </group>
   );
-}
+})

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Bổ sung thêm trạng thái 'stopped' để chặn người dùng bắt đầu lại ngay lập tức
 type TimerState = 'idle' | 'ready' | 'running' | 'stopped';

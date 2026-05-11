@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import { Menu, X, Box, BookOpen, Timer as TimerIcon } from 'lucide-react';
 
+import Simulator from './components/simulator/Simulator';
 import Learn from './components/Learn'; 
 import Timer from './components/Timer';
-import Simulator from './components/simulator/Simulator';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('simulator');
@@ -16,18 +16,6 @@ export default function Home() {
     { id: 'learn', name: 'Learn', icon: <BookOpen size={18} /> },
     { id: 'timer', name: 'Timer', icon: <TimerIcon size={18} /> },
   ];
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'simulator':
-        return <Simulator />;
-      case 'timer':
-        return <Timer />;
-      case 'learn':
-      default:
-        return <Learn />;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#FFFBF0] text-slate-900 font-sans">
@@ -96,7 +84,15 @@ export default function Home() {
 
       <main className="max-w-5xl mx-auto p-6 md:p-10">
         <div className="transition-all duration-500">
-          {renderContent()}
+          <div className={activeTab === 'simulator' ? 'block' : 'hidden'}>
+            <Simulator />
+          </div>
+          <div className={activeTab === 'learn' ? 'block' : 'hidden'}>
+            <Learn />
+          </div>
+          <div className={activeTab === 'timer' ? 'block' : 'hidden'}>
+            <Timer />
+          </div>
         </div>
       </main>
 

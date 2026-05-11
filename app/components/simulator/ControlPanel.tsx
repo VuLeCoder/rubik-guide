@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface ControlPanelProps {
   onMove: (move: string) => void;
   onReset: () => void;
 }
 
-export function ControlPanel({ onMove, onReset }: ControlPanelProps) {
+export const ControlPanel = memo(function ControlPanel({ onMove, onReset }: ControlPanelProps) {
   const faceMoves = ["U", "U'", "D", "D'", "L", "L'", "R", "R'", "F", "F'", "B", "B'"];
   const sliceMoves = ["M", "M'", "E", "E'", "S", "S'"];
 
@@ -38,4 +38,4 @@ export function ControlPanel({ onMove, onReset }: ControlPanelProps) {
       </button>
     </div>
   );
-}
+});
