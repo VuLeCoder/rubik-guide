@@ -78,7 +78,7 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, resetKey
         initialMoveQueue.current = [];
         moveQueue.current = [];
       } else if (subStep === 1) {
-        initialMoveQueue.current = ["U'", "F2", "U'", "L2", "B2", "U", "R2"];
+        initialMoveQueue.current = ["U'", "F2", "U'", "L2", "B2", "U'", "R2"];
         moveQueue.current = [...initialMoveQueue.current];
       }
     } else if (stepId === 6) {
