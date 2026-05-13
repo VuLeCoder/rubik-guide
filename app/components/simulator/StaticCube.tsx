@@ -20,6 +20,8 @@ const CAM_POS = {
   D: new THREE.Vector3(4, -5, 4),
   DEFAULT: new THREE.Vector3(4, 4, 4),
   BOTTOM: new THREE.Vector3(4, -4, 4),
+  FR: new THREE.Vector3(5, 3, 5), // Front-Right view for Step 3 Case 1
+  FL: new THREE.Vector3(-5, 3, 5), // Front-Left view for Step 3 Case 2
 };
 
 interface StaticCubeProps {
@@ -66,7 +68,15 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
 
   const initCube = useCallback(() => {
     let initialState = generateInitialState(true);
-    const defaultPos = stepId === 2 ? CAM_POS.F : CAM_POS.DEFAULT;
+    let defaultPos = CAM_POS.DEFAULT;
+    
+    if (stepId === 2) {
+      defaultPos = CAM_POS.F;
+    } else if (stepId === 3) {
+      // Specific camera angles for Step 3 cases
+      if (caseId === 1) defaultPos = CAM_POS.FR;
+      else if (caseId === 2) defaultPos = CAM_POS.FL;
+    }
     
     // Use functional update and distance check to avoid redundant state updates
     setTargetCamPos(prev => {
@@ -298,6 +308,12 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
       // After all moves are done, look at the bottom (White cross/corners)
       // Step 1 Substep 1 (Daisy) should stay at the current view to see the top face
       if (stepId === 1 && subStep === 0) {
+        if (setIsPaused) setIsPaused(true);
+        return;
+      }
+
+      // Step 3 and above: Don't rotate down after animation finishes
+      if (stepId >= 3) {
         if (setIsPaused) setIsPaused(true);
         return;
       }
