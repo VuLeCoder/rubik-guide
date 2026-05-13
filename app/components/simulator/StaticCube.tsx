@@ -10,6 +10,18 @@ import { STEPS } from '../learn/constants';
 
 const { SCENE, PHYSICS } = RUBIK_CONFIG;
 
+// Pre-defined camera positions to avoid object recreation and infinite update loops
+const CAM_POS = {
+  F: new THREE.Vector3(3, 4, 6),
+  B: new THREE.Vector3(-3, 4, -6),
+  L: new THREE.Vector3(-6, 4, 3),
+  R: new THREE.Vector3(6, 4, -3),
+  U: new THREE.Vector3(4, 5, 4),
+  D: new THREE.Vector3(4, -5, 4),
+  DEFAULT: new THREE.Vector3(4, 4, 4),
+  BOTTOM: new THREE.Vector3(4, -4, 4),
+};
+
 interface StaticCubeProps {
   stepId: number;
   subStep: number;
@@ -23,7 +35,7 @@ interface StaticCubeProps {
 const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPaused, resetKey = 0 }: StaticCubeProps) => {
   const [cubies, setCubies] = useState<CubieData[]>([]);
   const [activeMove, setActiveMove] = useState<AnimatingLayer | null>(null);
-  const [targetCamPos, setTargetCamPos] = useState(new THREE.Vector3(4, 4, 4));
+  const [targetCamPos, setTargetCamPos] = useState(CAM_POS.DEFAULT);
   const moveQueue = useRef<string[]>([]);
   const initialMoveQueue = useRef<string[]>([]);
   const controlsRef = useRef<OrbitControlsImpl>(null);
@@ -31,15 +43,14 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
   // Helper to get camera position for a specific move face
   const getCameraPosForMove = useCallback((move: string) => {
     const face = move.charAt(0);
-    // Increased Y and added slight X/Z offsets to see the Top (Yellow) face clearly
     switch(face) {
-      case 'F': return new THREE.Vector3(3, 4, 6);
-      case 'B': return new THREE.Vector3(-3, 4, -6);
-      case 'L': return new THREE.Vector3(-6, 4, 3);
-      case 'R': return new THREE.Vector3(6, 4, -3);
-      case 'U': return new THREE.Vector3(4, 5, 4);
-      case 'D': return new THREE.Vector3(4, -5, 4);
-      default: return new THREE.Vector3(4, 4, 4);
+      case 'F': return CAM_POS.F;
+      case 'B': return CAM_POS.B;
+      case 'L': return CAM_POS.L;
+      case 'R': return CAM_POS.R;
+      case 'U': return CAM_POS.U;
+      case 'D': return CAM_POS.D;
+      default: return CAM_POS.DEFAULT;
     }
   }, []);
 
@@ -55,7 +66,13 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
 
   const initCube = useCallback(() => {
     let initialState = generateInitialState(true);
-    setTargetCamPos(new THREE.Vector3(4, 4, 4));
+    const defaultPos = stepId === 2 ? CAM_POS.F : CAM_POS.DEFAULT;
+    
+    // Use functional update and distance check to avoid redundant state updates
+    setTargetCamPos(prev => {
+      if (prev.distanceTo(defaultPos) < 0.01) return prev;
+      return defaultPos;
+    });
     
     if (stepId === 1) {
       initialState = initialState.map(cubie => {
@@ -112,12 +129,26 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
       }
     } else if (stepId === 6) {
         initialState = generateInitialState(false);
+    } else if (stepId === 2) {
+        initialState = generateInitialState(false).map(c => {
+            const { x, y, z } = c.pos;
+            // Show all 6 centers
+            const isCenter = (Math.abs(x) + Math.abs(y) + Math.abs(z)) === 1;
+            // Show white cross edges (bottom layer edges)
+            const isWhiteCrossEdge = y === -1 && (Math.abs(x) === 1 || Math.abs(z) === 1) && (x * z === 0);
+            // Show the target corner (Front-Right-Down: x=1, y=-1, z=1)
+            const isTargetCorner = x === 1 && y === -1 && z === 1;
+
+            if (isCenter || isWhiteCrossEdge || isTargetCorner) {
+                return c;
+            }
+            return { ...c, stickers: c.stickers.map(s => s === COLORS.inner ? s : COLORS.gray) };
+        });
     } else {
         initialState = generateInitialState(false).map(c => {
             // White is bottom (-Y), Yellow is top (+Y)
             let show = true;
-            if (stepId === 2) show = c.pos.y < 0;
-            else if (stepId === 3) show = c.pos.y < 1;
+            if (stepId === 3) show = c.pos.y < 1;
             
             if (show) return c;
             return { ...c, stickers: c.stickers.map(s => s === COLORS.inner ? s : COLORS.gray) };
@@ -148,7 +179,7 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
     }
     
     if (controlsRef.current) {
-      controlsRef.current.object.position.set(4, 4, 4);
+      controlsRef.current.object.position.copy(defaultPos);
       controlsRef.current.update();
     }
   }, [stepId, subStep, caseId]);
@@ -226,37 +257,50 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
     if (!activeMove && moveQueue.current.length > 0 && !isPaused) {
       const nextMove = moveQueue.current[0];
       
-      // Auto-rotate camera for Step 1 Substep 2
+      // Auto-rotate camera ONLY for Step 1 (specifically Substep 2 as it has moves)
+      // Step 2 is kept fixed during moves as per user request
       if (stepId === 1 && subStep === 1) {
         const face = nextMove.charAt(0);
         const camPos = face === 'U' && moveQueue.current.length > 1 
           ? getCameraPosForMove(moveQueue.current[1]) 
           : getCameraPosForMove(nextMove);
         
-        setTargetCamPos(camPos);
+        if (targetCamPos.distanceTo(camPos) > 0.01) {
+          setTargetCamPos(camPos);
+        }
         
-        // Wait for camera to rotate before performing the move
         const timer = setTimeout(() => {
           const actualMove = moveQueue.current.shift();
           if (actualMove) performMove(actualMove);
-        }, 1000); // 1000ms delay after camera rotation
+        }, 1000);
         return () => clearTimeout(timer);
       } else {
         const timer = setTimeout(() => {
           const actualMove = moveQueue.current.shift();
           if (actualMove) performMove(actualMove);
-        }, 300);
+        }, stepId === 2 ? 1000 : 300); // Slower delay for Step 2 as it has moves but no cam rotation
         return () => clearTimeout(timer);
       }
     } else if (!activeMove && moveQueue.current.length === 0 && !isPaused) {
-      // After all moves are done, look at the bottom (White cross)
-      const timer = setTimeout(() => {
-        setTargetCamPos(new THREE.Vector3(4, -4, 4));
+      // After all moves are done, look at the bottom (White cross/corners)
+      // Step 1 Substep 1 (Daisy) should stay at the current view to see the top face
+      if (stepId === 1 && subStep === 0) {
         if (setIsPaused) setIsPaused(true);
-      }, 1000);
+        return;
+      }
+
+      // Step 1 Substep 2 and Step 2: rotate to bottom AFTER finishing
+      const bottomPos = new THREE.Vector3(4, -4, 4);
+      if (targetCamPos.distanceTo(bottomPos) > 0.1) {
+        setTargetCamPos(bottomPos);
+      }
+      
+      const timer = setTimeout(() => {
+        if (setIsPaused) setIsPaused(true);
+      }, 1500); // Wait for camera to finish before pausing
       return () => clearTimeout(timer);
     }
-  }, [activeMove, performMove, isPaused, stepId, subStep, getCameraPosForMove, setIsPaused]);
+  }, [activeMove, performMove, isPaused, stepId, subStep, getCameraPosForMove, setIsPaused, targetCamPos]);
 
   const finalizeMove = useCallback((axis: 'x' | 'y' | 'z', layer: number, targetAngle: number) => {
     setCubies(prev => prev.map(cubie => {
