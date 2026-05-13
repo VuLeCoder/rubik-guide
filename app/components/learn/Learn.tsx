@@ -18,11 +18,13 @@ import 'swiper/css/effect-fade';
 export default function Learn() {
   const [activeStepIdx, setActiveStepIdx] = useState(0);
   const [activeSubStepIdx, setActiveSubStepIdx] = useState(0);
+  const [activeCaseIdx, setActiveCaseIdx] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const mainSwiperRef = useRef<any>(null);
   const subSwiperRefs = useRef<any[]>([]);
+  const caseSwiperRef = useRef<any>(null);
 
   const activeStep = STEPS[activeStepIdx];
   const activeSubStep = activeStep.subSteps[activeSubStepIdx];
@@ -43,7 +45,7 @@ export default function Learn() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const hasAnimation = activeStep.id === 1 && activeSubStepIdx === 1;
+  const hasAnimation = (activeStep.id === 1 && activeSubStepIdx === 1) || (activeStep.id === 2 && activeSubStep.cases);
 
   const handleNext = () => {
     const currentSubSwiper = subSwiperRefs.current[activeStepIdx];
@@ -141,6 +143,7 @@ export default function Learn() {
                   onSwiper={(swiper) => (subSwiperRefs.current[stepIdx] = swiper)}
                   onSlideChange={(swiper) => {
                     setActiveSubStepIdx(swiper.activeIndex);
+                    setActiveCaseIdx(0);
                     setIsPaused(false);
                     // Update main swiper height when nested slide changes
                     mainSwiperRef.current?.updateAutoHeight(300);
@@ -164,6 +167,38 @@ export default function Learn() {
                             {sub.content}
                           </p>
 
+                          {sub.cases && (
+                            <div className="mt-8">
+                                <Swiper
+                                  modules={[Pagination]}
+                                  pagination={{ clickable: true }}
+                                  onSwiper={(swiper) => (caseSwiperRef.current = swiper)}
+                                  onSlideChange={(swiper) => {
+                                    setActiveCaseIdx(swiper.activeIndex);
+                                    setResetKey(prev => prev + 1);
+                                    setIsPaused(false);
+                                  }}
+                                  className="w-full pb-10"
+                                >
+                                  {sub.cases.map((c, cIdx) => (
+                                    <SwiperSlide key={cIdx}>
+                                        <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-slate-200 shadow-sm">
+                                            <h3 className="text-xl font-black text-slate-800 mb-3">{c.title}</h3>
+                                            <p className="text-slate-600 mb-6">{c.content}</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {c.formula.split(' ').map((move, mIdx) => (
+                                                    <code key={mIdx} className="px-3 py-2 bg-slate-900 text-amber-400 rounded-lg font-mono font-black">
+                                                        {move}
+                                                    </code>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </SwiperSlide>
+                                  ))}
+                                </Swiper>
+                            </div>
+                          )}
+
                           {sub.formula && (
                             <div className="mb-6">
                               <div className="bg-white rounded-[24px] md:rounded-[32px] p-6 md:p-8 shadow-xl border border-slate-100 relative overflow-hidden group/formula">
@@ -182,14 +217,6 @@ export default function Learn() {
                             </div>
                           )}
                         </div>
-
-                        {/* {stepIdx === STEPS.length - 1 && subIdx === step.subSteps.length - 1 && (
-                          <div className="mt-4 md:mt-8">
-                             <button className="w-full py-4 md:py-5 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-green-500/20 transition-all hover:-translate-y-1 active:scale-95">
-                               HOÀN THÀNH LỘ TRÌNH 🎉
-                             </button>
-                          </div>
-                        )} */}
                       </div>
                     </SwiperSlide>
                   ))}
@@ -208,6 +235,7 @@ export default function Learn() {
             <StaticCube 
               stepId={activeStep.id} 
               subStep={activeSubStepIdx} 
+              caseId={activeStep.id === 2 ? activeCaseIdx + 1 : undefined}
               isPaused={isPaused} 
               resetKey={resetKey} 
             />

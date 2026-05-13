@@ -7,13 +7,11 @@ export const STEPS: Step[] = [
     subSteps: [
       { 
         title: "Làm bông hoa cúc", 
-        content: "Đưa 4 viên cạnh trắng về quanh tâm vàng ở mặt trên. Không cần quan tâm màu các mặt bên.",
-        formula: "Xoay tự do"
+        content: "Đưa 4 viên cạnh trắng về quanh tâm vàng ở mặt trên. Không cần quan tâm màu các mặt bên. Mục tiêu là tạo ra hình bông hoa cúc.",
       },
       { 
-        title: "Tạo dấu cộng đúng", 
-        content: "Xoay mặt trên để màu cạnh trùng với tâm mặt bên, sau đó xoay F2 để đưa về mặt trắng.",
-        formula: "F2 (cho mỗi cạnh)"
+        title: "Tạo dấu cộng trắng", 
+        content: "Xoay mặt trên (U) để màu cạnh trùng với tâm mặt bên, sau đó xoay mặt đó 180 độ (F2, R2...) để đưa về mặt trắng.",
       }
     ],
     color: "bg-slate-400", 
@@ -25,8 +23,30 @@ export const STEPS: Step[] = [
     subSteps: [
       {
         title: "Hoàn thiện mặt trắng",
-        content: "Đưa các góc trắng về đúng vị trí. Hướng mặt trắng xuống dưới (đối diện mặt vàng).",
-        formula: "U R U' R' | R U R' | R U2 R'"
+        content: "Đưa các góc trắng về đúng vị trí. Hướng mặt trắng xuống dưới (đối diện mặt vàng). Tìm viên góc có màu trắng ở tầng 3 và đưa về phía trên vị trí nó cần xuống.",
+        cases: [
+          {
+            id: 1,
+            title: "Trường hợp 1: Mặt trắng sang phải",
+            content: "Viên góc ở tầng 3, mặt trắng hướng sang bên phải.",
+            formula: "R U R'",
+            initMoves: ["R", "U'", "R'"]
+          },
+          {
+            id: 2,
+            title: "Trường hợp 2: Mặt trắng hướng về trước",
+            content: "Viên góc ở tầng 3, mặt trắng hướng về phía bạn.",
+            formula: "U R U' R'",
+            initMoves: ["R", "U", "R'", "U'"]
+          },
+          {
+            id: 3,
+            title: "Trường hợp 3: Mặt trắng hướng lên trên",
+            content: "Viên góc ở tầng 3, mặt trắng hướng lên mặt vàng.",
+            formula: "R U2 R' U' R U R'",
+            initMoves: ["R", "U'", "R'", "U", "R", "U2", "R'", "U'"]
+          }
+        ]
       }
     ],
     color: "bg-blue-600", 

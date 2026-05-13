@@ -30,8 +30,8 @@ export const RUBIK_CONFIG = {
 };
 
 export const COLORS = {
-  top: '#FFFFFF',
-  bottom: '#FFD700',
+  bottom: '#FFFFFF',
+  top: '#FFD700',
   front: '#22C55E',
   back: '#3B82F6',
   right: '#F97316',
