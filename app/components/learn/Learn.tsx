@@ -271,7 +271,7 @@ export default function Learn() {
       {/* Shared Canvas */}
       <div className="fixed inset-0 pointer-events-none z-[100]">
         <Canvas
-          eventSource={containerRef}
+          eventSource={containerRef as React.RefObject<HTMLElement>}
           className="w-full h-full"
           camera={{ position: [4, 4, 4], fov }}
           gl={{ 
