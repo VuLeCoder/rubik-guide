@@ -76,6 +76,8 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
       // Specific camera angles for Step 3 cases
       if (caseId === 1) defaultPos = CAM_POS.FR;
       else if (caseId === 2) defaultPos = CAM_POS.FL;
+    } else if (stepId >= 4) {
+      defaultPos = CAM_POS.U;
     }
     
     // Use functional update and distance check to avoid redundant state updates
@@ -85,6 +87,7 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
     });
     
     if (stepId === 1) {
+      // ... (existing step 1 logic)
       initialState = initialState.map(cubie => {
         const { x, y, z } = cubie.pos;
         const stickers = [...cubie.stickers];
@@ -168,21 +171,56 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
         });
     } else {
         initialState = generateInitialState(false).map(c => {
-            // White is bottom (-Y), Yellow is top (+Y)
-            // For steps >= 4, show at least the first two layers (y <= 0)
-            let show = true;
-            if (stepId >= 4) show = c.pos.y < 1;
+            const { x, y, z } = c.pos;
             
-            if (show) return c;
-            return { ...c, stickers: c.stickers.map(s => s === COLORS.inner ? s : COLORS.gray) };
+            // For Step 4 (Yellow Cross): Show first two layers, gray out top corners
+            if (stepId === 4) {
+                const isTopCorner = y === 1 && Math.abs(x) === 1 && Math.abs(z) === 1;
+                if (isTopCorner) {
+                    return { ...c, stickers: c.stickers.map(s => s === COLORS.inner ? s : COLORS.gray) };
+                }
+                
+                // Manual Case setup for Step 4
+                if (caseId !== undefined) {
+                    const isTopEdge = y === 1 && (Math.abs(x) === 1 || Math.abs(z) === 1) && (x * z === 0);
+                    if (isTopEdge) {
+                        let yellowOnTop = true;
+                        if (caseId === 1) yellowOnTop = false; // Dot: none on top
+                        else if (caseId === 2) yellowOnTop = (z === -1 && x === 0) || (x === -1 && z === 0); // L-shape (Back, Left)
+                        else if (caseId === 3) yellowOnTop = (Math.abs(x) === 1 && z === 0); // Horizontal Line (Left, Right)
+                        
+                        if (!yellowOnTop) {
+                            const s = [...c.stickers];
+                            // Find which face this edge is on to swap with top
+                            let sideIdx = -1;
+                            if (x === 1) sideIdx = 0; // Right
+                            else if (x === -1) sideIdx = 1; // Left
+                            else if (z === 1) sideIdx = 4; // Front
+                            else if (z === -1) sideIdx = 5; // Back
+                            
+                            if (sideIdx !== -1) {
+                                // Swap top (2) with side sticker to "flip" the edge
+                                const tmp = s[2];
+                                s[2] = s[sideIdx];
+                                s[sideIdx] = tmp;
+                            }
+                            return { ...c, stickers: s };
+                        }
+                    }
+                }
+                return c;
+            }
+            
+            // For Step 5 & 6: Show full cube
+            return c;
         });
     }
 
     setCubies(initialState);
     setActiveMove(null);
 
-    // Handle Cases for Step 2 & 3
-    if ((stepId === 2 || stepId === 3) && caseId !== undefined) {
+    // Handle Cases for all steps with cases
+    if (stepId >= 2 && caseId !== undefined) {
       const step = STEPS.find(s => s.id === stepId);
       const sub = step?.subSteps[subStep];
       const c = sub?.cases?.find(cs => cs.id === caseId);

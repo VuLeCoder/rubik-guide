@@ -86,8 +86,30 @@ export const STEPS: Step[] = [
     subSteps: [
       {
         title: "Tạo dấu cộng vàng",
-        content: "Tạo dấu cộng màu vàng trên mặt trên cùng. Có 3 trường hợp: Chấm, chữ L, đường thẳng.",
-        formula: "F R U R' U' F'"
+        content: "Tạo dấu cộng màu vàng trên mặt trên cùng. Có 3 trường hợp: Chấm, chữ L, đường thẳng. Lưu ý: Chỉ quan tâm các viên cạnh, bỏ qua các viên góc.",
+        cases: [
+          {
+            id: 1,
+            title: "Trường hợp 1: Dấu chấm",
+            content: "Chỉ có duy nhất viên tâm màu vàng",
+            formula: "F R U R' U' F' U2 F U R U' R' F'",
+            initMoves: []
+          },
+          {
+            id: 2,
+            title: "Trường hợp 2: Chữ L ngược",
+            content: "Hai viên cạnh vàng tạo thành chữ L. Xoay mặt trên (U) để 2 cạnh này nằm ở vị trí Phía sau (UB) và Bên trái (UL).",
+            formula: "F U R U' R' F'",
+            initMoves: []
+          },
+          {
+            id: 3,
+            title: "Trường hợp 3: Đường thẳng",
+            content: "Hai viên cạnh vàng tạo thành đường thẳng. Xoay mặt trên (U) để đường thẳng nằm ngang.",
+            formula: "F R U R' U' F'",
+            initMoves: []
+          }
+        ]
       }
     ],
     color: "bg-yellow-500", 

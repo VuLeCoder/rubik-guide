@@ -235,7 +235,7 @@ export default function Learn() {
             <StaticCube 
               stepId={activeStep.id} 
               subStep={activeSubStepIdx} 
-              caseId={[2, 3].includes(activeStep.id) ? activeCaseIdx + 1 : undefined}
+              caseId={activeSubStep.cases ? activeCaseIdx + 1 : undefined}
               isPaused={isPaused} 
               setIsPaused={setIsPaused}
               resetKey={resetKey} 
