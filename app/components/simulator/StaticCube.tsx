@@ -193,7 +193,7 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
     let axis: 'x' | 'y' | 'z' = 'x';
     let layer = 0;
     let targetAngle = isPrime ? Math.PI / 2 : -Math.PI / 2;
-    if (isDouble) targetAngle = Math.PI;
+    if (isDouble) targetAngle *= 2;
 
     if (["R", "L"].includes(m)) { axis = 'x'; layer = m === "R" ? 1 : -1; }
     else if (["U", "D"].includes(m)) { axis = 'y'; layer = m === "U" ? 1 : -1; }
@@ -242,7 +242,7 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
     let axis: 'x' | 'y' | 'z' = 'x';
     let layer = 0;
     let target = isPrime ? Math.PI / 2 : -Math.PI / 2;
-    if (isDouble) target = Math.PI;
+    if (isDouble) target *= 2;
 
     if (["R", "L"].includes(m)) { axis = 'x'; layer = m === "R" ? 1 : -1; }
     else if (["U", "D"].includes(m)) { axis = 'y'; layer = m === "U" ? 1 : -1; }

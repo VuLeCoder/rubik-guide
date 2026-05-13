@@ -52,7 +52,8 @@ export default function Simulator() {
 
     const camera = controlsRef.current.object;
     const isPrime = move.includes("'");
-    const m = move.replace("'", "");
+    const isDouble = move.includes("2");
+    const m = move.replace("'", "").replace("2", "");
 
     const getClosestAxis = (vec: THREE.Vector3) => {
       const axes = [
@@ -68,6 +69,7 @@ export default function Simulator() {
 
     let directionInfo;
     let target = ["R", "U", "F", "S", "E"].includes(m) ? -Math.PI / 2 : Math.PI / 2;
+    if (isDouble) target *= 2;
     let layer = 0;
 
     if (["R", "L", "M"].includes(m)) {
@@ -112,13 +114,19 @@ export default function Simulator() {
       newPos.z = Math.round(newPos.z);
 
       let s = [...cubie.stickers];
-      const isClockwise = targetAngle < 0;
-      if (axis === 'x') {
-        s = isClockwise ? [s[0], s[1], s[4], s[5], s[3], s[2]] : [s[0], s[1], s[5], s[4], s[2], s[3]];
-      } else if (axis === 'y') {
-        s = isClockwise ? [s[5], s[4], s[2], s[3], s[0], s[1]] : [s[4], s[5], s[2], s[3], s[1], s[0]];
-      } else if (axis === 'z') {
-        s = isClockwise ? [s[2], s[3], s[1], s[0], s[4], s[5]] : [s[3], s[2], s[0], s[1], s[4], s[5]];
+      let angle = targetAngle;
+      while (angle < 0) angle += Math.PI * 2;
+      const steps = Math.round(angle / (Math.PI / 2)) % 4;
+
+      for (let i = 0; i < steps; i++) {
+        const p = [...s];
+        if (axis === 'x') {
+          s[4] = p[2]; s[3] = p[4]; s[5] = p[3]; s[2] = p[5];
+        } else if (axis === 'y') {
+          s[0] = p[4]; s[5] = p[0]; s[1] = p[5]; s[4] = p[1];
+        } else if (axis === 'z') {
+          s[1] = p[2]; s[3] = p[1]; s[0] = p[3]; s[2] = p[0];
+        }
       }
       return { ...cubie, pos: newPos, stickers: s };
     }));
