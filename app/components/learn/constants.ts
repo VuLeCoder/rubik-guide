@@ -44,7 +44,7 @@ export const STEPS: Step[] = [
             title: "Trường hợp 3: Mặt trắng hướng lên trên",
             content: "Viên góc ở tầng 3, mặt trắng hướng lên mặt vàng.",
             formula: "R U2 R' U' R U R'",
-            initMoves: ["R", "U'", "R'", "U", "R", "U2", "R'", "U'"]
+            initMoves: ["R", "U", "R'", "U'", "R", "U2", "R'", "U'"]
           }
         ]
       }
