@@ -45,7 +45,7 @@ export default function Learn() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const hasAnimation = (activeStep.id === 1 && activeSubStepIdx === 1) || (activeStep.id === 2 && activeSubStep.cases);
+  const hasAnimation = (activeStep.id === 1 && activeSubStepIdx === 1) || !!activeSubStep.cases;
 
   const handleNext = () => {
     const currentSubSwiper = subSwiperRefs.current[activeStepIdx];
@@ -199,7 +199,7 @@ export default function Learn() {
                             </div>
                           )}
 
-                          {sub.formula && (
+                          {sub.formula && !sub.cases && (
                             <div className="mb-6">
                               <div className="bg-white rounded-[24px] md:rounded-[32px] p-6 md:p-8 shadow-xl border border-slate-100 relative overflow-hidden group/formula">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/5 rounded-full -mr-16 -mt-16 transition-transform group-hover/formula:scale-150 duration-700" />
@@ -235,7 +235,7 @@ export default function Learn() {
             <StaticCube 
               stepId={activeStep.id} 
               subStep={activeSubStepIdx} 
-              caseId={activeStep.id === 2 ? activeCaseIdx + 1 : undefined}
+              caseId={[2, 3].includes(activeStep.id) ? activeCaseIdx + 1 : undefined}
               isPaused={isPaused} 
               setIsPaused={setIsPaused}
               resetKey={resetKey} 

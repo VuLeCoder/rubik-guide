@@ -58,8 +58,23 @@ export const STEPS: Step[] = [
     subSteps: [
       {
         title: "Giải tầng giữa",
-        content: "Tìm viên cạnh không có màu vàng ở tầng 3 và đưa về đúng vị trí ở tầng 2.",
-        formula: "R U R' U' F' U' F (Phải) | L' U' L U F U F' (Trái)"
+        content: "Tìm viên cạnh không có màu vàng ở tầng 3 và đưa về đúng vị trí ở tầng 2. Xoay tầng 3 sao cho màu mặt trước của viên cạnh trùng với tâm mặt trước.",
+        cases: [
+          {
+            id: 1,
+            title: "Trường hợp 1: Sang phải",
+            content: "Viên cạnh cần chuyển sang vị trí bên phải (giữa mặt Trước và mặt Phải).",
+            formula: "U R U' R' U' F' U F",
+            initMoves: ["F'", "U'", "F", "U", "R", "U", "R'", "U'"]
+          },
+          {
+            id: 2,
+            title: "Trường hợp 2: Sang trái",
+            content: "Viên cạnh cần chuyển sang vị trí bên trái (giữa mặt Trước và mặt Trái).",
+            formula: "U' L' U L U F U' F'",
+            initMoves: ["F", "U", "F'", "U'", "L'", "U'", "L", "U"]
+          }
+        ]
       }
     ],
     color: "bg-green-600", 

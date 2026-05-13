@@ -144,11 +144,24 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
             }
             return { ...c, stickers: c.stickers.map(s => s === COLORS.inner ? s : COLORS.gray) };
         });
+    } else if (stepId === 3) {
+        initialState = generateInitialState(false).map(c => {
+            const { x, y, z } = c.pos;
+            const isBottomLayer = y === -1;
+            const isCenter = (Math.abs(x) + Math.abs(y) + Math.abs(z)) === 1;
+            const isMiddleEdge = y === 0 && Math.abs(x) === 1 && Math.abs(z) === 1;
+
+            if (isBottomLayer || isCenter || isMiddleEdge) {
+                return c;
+            }
+            return { ...c, stickers: c.stickers.map(s => s === COLORS.inner ? s : COLORS.gray) };
+        });
     } else {
         initialState = generateInitialState(false).map(c => {
             // White is bottom (-Y), Yellow is top (+Y)
+            // For steps >= 4, show at least the first two layers (y <= 0)
             let show = true;
-            if (stepId === 3) show = c.pos.y < 1;
+            if (stepId >= 4) show = c.pos.y < 1;
             
             if (show) return c;
             return { ...c, stickers: c.stickers.map(s => s === COLORS.inner ? s : COLORS.gray) };
@@ -158,9 +171,9 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
     setCubies(initialState);
     setActiveMove(null);
 
-    // Handle Cases for Step 2
-    if (stepId === 2 && caseId !== undefined) {
-      const step = STEPS.find(s => s.id === 2);
+    // Handle Cases for Step 2 & 3
+    if ((stepId === 2 || stepId === 3) && caseId !== undefined) {
+      const step = STEPS.find(s => s.id === stepId);
       const sub = step?.subSteps[subStep];
       const c = sub?.cases?.find(cs => cs.id === caseId);
       
