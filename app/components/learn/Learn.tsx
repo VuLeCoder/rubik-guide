@@ -31,7 +31,7 @@ export default function Learn() {
 
   const handleReset = () => {
     setResetKey(prev => prev + 1);
-    setIsPaused(false);
+    setIsPaused(true);
   };
 
   // Responsive FOV adjustment
@@ -127,7 +127,7 @@ export default function Learn() {
             onSlideChange={(swiper) => {
               setActiveStepIdx(swiper.activeIndex);
               setActiveSubStepIdx(0);
-              setIsPaused(false);
+              setIsPaused(true);
               // Reset nested swiper to first slide when step changes
               subSwiperRefs.current[swiper.activeIndex]?.slideTo(0);
             }}
@@ -144,7 +144,7 @@ export default function Learn() {
                   onSlideChange={(swiper) => {
                     setActiveSubStepIdx(swiper.activeIndex);
                     setActiveCaseIdx(0);
-                    setIsPaused(false);
+                    setIsPaused(true);
                     // Update main swiper height when nested slide changes
                     mainSwiperRef.current?.updateAutoHeight(300);
                   }}
@@ -176,7 +176,7 @@ export default function Learn() {
                                   onSlideChange={(swiper) => {
                                     setActiveCaseIdx(swiper.activeIndex);
                                     setResetKey(prev => prev + 1);
-                                    setIsPaused(false);
+                                    setIsPaused(true);
                                   }}
                                   className="w-full pb-10"
                                 >
