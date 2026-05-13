@@ -237,6 +237,7 @@ export default function Learn() {
               subStep={activeSubStepIdx} 
               caseId={activeStep.id === 2 ? activeCaseIdx + 1 : undefined}
               isPaused={isPaused} 
+              setIsPaused={setIsPaused}
               resetKey={resetKey} 
             />
 

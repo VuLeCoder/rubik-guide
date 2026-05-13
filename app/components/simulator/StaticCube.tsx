@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { RUBIK_CONFIG, COLORS, generateInitialState, CubieData, AnimatingLayer } from './constants';
@@ -14,19 +15,47 @@ interface StaticCubeProps {
   subStep: number;
   caseId?: number;
   isPaused?: boolean;
+  setIsPaused?: (paused: boolean) => void;
   resetKey?: number;
 }
 
 // Internal component that contains the 3D scene logic
-const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, resetKey = 0 }: StaticCubeProps) => {
+const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPaused, resetKey = 0 }: StaticCubeProps) => {
   const [cubies, setCubies] = useState<CubieData[]>([]);
   const [activeMove, setActiveMove] = useState<AnimatingLayer | null>(null);
+  const [targetCamPos, setTargetCamPos] = useState(new THREE.Vector3(4, 4, 4));
   const moveQueue = useRef<string[]>([]);
   const initialMoveQueue = useRef<string[]>([]);
   const controlsRef = useRef<OrbitControlsImpl>(null);
 
+  // Helper to get camera position for a specific move face
+  const getCameraPosForMove = useCallback((move: string) => {
+    const face = move.charAt(0);
+    // Increased Y and added slight X/Z offsets to see the Top (Yellow) face clearly
+    switch(face) {
+      case 'F': return new THREE.Vector3(3, 4, 6);
+      case 'B': return new THREE.Vector3(-3, 4, -6);
+      case 'L': return new THREE.Vector3(-6, 4, 3);
+      case 'R': return new THREE.Vector3(6, 4, -3);
+      case 'U': return new THREE.Vector3(4, 5, 4);
+      case 'D': return new THREE.Vector3(4, -5, 4);
+      default: return new THREE.Vector3(4, 4, 4);
+    }
+  }, []);
+
+  useFrame((state) => {
+    if (controlsRef.current && !isPaused) {
+      // Smoothly move camera to target position
+      if (state.camera.position.distanceTo(targetCamPos) > 0.01) {
+        state.camera.position.lerp(targetCamPos, 0.06);
+        controlsRef.current.update();
+      }
+    }
+  });
+
   const initCube = useCallback(() => {
     let initialState = generateInitialState(true);
+    setTargetCamPos(new THREE.Vector3(4, 4, 4));
     
     if (stepId === 1) {
       initialState = initialState.map(cubie => {
@@ -195,28 +224,39 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, resetKey
 
   useEffect(() => {
     if (!activeMove && moveQueue.current.length > 0 && !isPaused) {
-      const timer = setTimeout(() => {
-        const next = moveQueue.current.shift();
-        if (next) performMove(next);
+      const nextMove = moveQueue.current[0];
+      
+      // Auto-rotate camera for Step 1 Substep 2
+      if (stepId === 1 && subStep === 1) {
+        const face = nextMove.charAt(0);
+        const camPos = face === 'U' && moveQueue.current.length > 1 
+          ? getCameraPosForMove(moveQueue.current[1]) 
+          : getCameraPosForMove(nextMove);
         
-        if (moveQueue.current.length === 0 && controlsRef.current) {
-          setTimeout(() => {
-            const cam = controlsRef.current!.object;
-            const targetPos = new THREE.Vector3(4, -4, 4);
-            let progress = 0;
-            const animateCam = () => {
-              progress += 0.02;
-              cam.position.lerp(targetPos, progress);
-              controlsRef.current?.update();
-              if (progress < 1) requestAnimationFrame(animateCam);
-            };
-            animateCam();
-          }, 1000);
-        }
-      }, 300);
+        setTargetCamPos(camPos);
+        
+        // Wait for camera to rotate before performing the move
+        const timer = setTimeout(() => {
+          const actualMove = moveQueue.current.shift();
+          if (actualMove) performMove(actualMove);
+        }, 1000); // 1000ms delay after camera rotation
+        return () => clearTimeout(timer);
+      } else {
+        const timer = setTimeout(() => {
+          const actualMove = moveQueue.current.shift();
+          if (actualMove) performMove(actualMove);
+        }, 300);
+        return () => clearTimeout(timer);
+      }
+    } else if (!activeMove && moveQueue.current.length === 0 && !isPaused) {
+      // After all moves are done, look at the bottom (White cross)
+      const timer = setTimeout(() => {
+        setTargetCamPos(new THREE.Vector3(4, -4, 4));
+        if (setIsPaused) setIsPaused(true);
+      }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [activeMove, performMove, isPaused]);
+  }, [activeMove, performMove, isPaused, stepId, subStep, getCameraPosForMove, setIsPaused]);
 
   const finalizeMove = useCallback((axis: 'x' | 'y' | 'z', layer: number, targetAngle: number) => {
     setCubies(prev => prev.map(cubie => {
