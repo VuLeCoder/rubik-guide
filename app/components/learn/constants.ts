@@ -223,7 +223,7 @@ export const STEPS: Step[] = [
           {
             id: 3,
             title: "Trường hợp 3",
-            content: "Không có mặt nào hoàn thiện. Trường hợp này dùng công thức của trường hợp 1 hoặc trường hợp 2 để xoay đưa về 1 mặt đúng.",
+            content: "Không có mặt nào hoàn thiện. Trường hợp này dùng công thức của trường hợp 1 hoặc trường hợp 2 để xoay đưa về **trường hợp 1** hoặc **trường hợp 2**.",
             formula: "R U' R U R U R U' R' U' R2",
             initMoves: []
           }

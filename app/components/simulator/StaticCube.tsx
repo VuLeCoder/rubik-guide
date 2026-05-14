@@ -357,6 +357,29 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
 
             return c;
         });
+
+        // Rotate the entire cube 90 degrees CCW around Y for Step 6 Substep 2
+        // This makes Orange (old Right) the new Front face
+        if (stepId === 6 && subStep === 1) {
+            initialState = initialState.map(cubie => {
+                const { x, y, z } = cubie.pos;
+                // Rotation -90 deg on Y: (x, z) -> (-z, x)
+                const newPos = new THREE.Vector3(-z, y, x);
+                
+                const s = [...cubie.stickers];
+                const p = [...s];
+                // Rotate stickers: 0:R, 1:L, 2:U, 3:D, 4:F, 5:B
+                // New Front (4) = Old Right (0)
+                // New Left (1) = Old Front (4)
+                // New Back (5) = Old Left (1)
+                // New Right (0) = Old Back (5)
+                s[4] = p[0]; 
+                s[1] = p[4]; 
+                s[5] = p[1]; 
+                s[0] = p[5];
+                return { ...cubie, pos: newPos, stickers: s };
+            });
+        }
     }
 
     setCubies(initialState);
