@@ -71,7 +71,11 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
     let defaultPos = CAM_POS.DEFAULT;
 
     switch(stepId) {
-      case 1: { defaultPos = CAM_POS.DEFAULT; break; }
+      case 1: { 
+        if (subStep === 1) defaultPos = CAM_POS.F;
+        else defaultPos = CAM_POS.DEFAULT; 
+        break; 
+      }
       case 2: { defaultPos = CAM_POS.F; break; }
 
       case 3: {
@@ -396,7 +400,13 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
       
       // Auto-rotate camera ONLY for Step 1
       if (stepId === 1 && subStep === 1) {
-        const camPos = getCameraPosForMove(nextMove);
+        let lookAheadMove = nextMove;
+        // If current move is U (alignment), look at the face that will be solved next (the 2nd move in queue)
+        if (nextMove.startsWith('U') && moveQueue.current.length > 1) {
+          lookAheadMove = moveQueue.current[1];
+        }
+        
+        const camPos = getCameraPosForMove(lookAheadMove);
         if (targetCamPos.distanceTo(camPos) > 0.01) setTargetCamPos(camPos);
         
         const timer = setTimeout(() => {
