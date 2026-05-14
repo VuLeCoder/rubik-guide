@@ -37,6 +37,7 @@ export default function Simulator() {
     cubiePos: THREE.Vector3
   } | null>(null);
   const [queueLength, setQueueLength] = useState(0);
+  const [inputLocked, setInputLocked] = useState(false);
 
   // Sync ref with state
   const setActiveMoveWithRef: React.Dispatch<React.SetStateAction<AnimatingLayer | null>> = useCallback((value) => {
@@ -98,6 +99,10 @@ export default function Simulator() {
 
   // Handle queue processing via useEffect to ensure React has rendered the state updates
   React.useEffect(() => {
+    if (!activeMove && !isTransitioning.current && moveQueue.current.length === 0) {
+      setInputLocked(false);
+    }
+
     if (!activeMove && !isTransitioning.current && moveQueue.current.length > 0) {
       const nextMove = moveQueue.current.shift();
       setQueueLength(moveQueue.current.length);
@@ -245,20 +250,26 @@ export default function Simulator() {
   }, [setActiveMoveWithRef]);
 
   const handleMove = useCallback((move: string) => {
-    // queue full => block input
-    if (moveQueue.current.length >= MAX_QUEUE) {
+    if (inputLocked) {
       return;
     }
 
-    // đang animating => push queue
+    if (moveQueue.current.length >= MAX_QUEUE) {
+      setInputLocked(true);
+      return;
+    }
+
     if (isTransitioning.current || activeMoveRef.current) {
       moveQueue.current.push(move);
-      // sync UI
       setQueueLength(moveQueue.current.length);
+
+      if (moveQueue.current.length >= MAX_QUEUE) {
+        setInputLocked(true);
+      }
     } else {
       performMove(move);
     }
-  }, [performMove]);
+  }, [performMove, inputLocked]);
 
   const resetAll = useCallback(() => {
     setCubies(generateInitialState());
@@ -322,7 +333,7 @@ export default function Simulator() {
         <ControlPanel
           onMove={handleMove}
           onReset={resetAll}
-          disabled={queueLength >= MAX_QUEUE}
+          disabled={inputLocked}
         />
       </div>
 
