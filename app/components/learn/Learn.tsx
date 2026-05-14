@@ -65,6 +65,17 @@ export default function Learn() {
     }
   };
 
+  const formatText = (text: string) => {
+    return text.split('\n').map((line, i) => (
+      <span key={i}>
+        {line.split('**').map((part, j) => 
+          j % 2 === 1 ? <strong key={j} className="text-slate-900 font-black">{part}</strong> : part
+        )}
+        {i < text.split('\n').length - 1 && <br />}
+      </span>
+    ));
+  };
+
   return (
     <div ref={containerRef} className="min-h-[calc(100vh-64px)] flex flex-col relative overflow-hidden bg-[#FFFBF0]">
       {/* Dynamic Background Pattern */}
@@ -164,7 +175,7 @@ export default function Learn() {
                             {sub.title}
                           </h2>
                           <p className="text-base md:text-xl text-slate-600 font-medium leading-relaxed mb-6">
-                            {sub.content}
+                            {formatText(sub.content)}
                           </p>
 
                           {sub.cases && (
@@ -184,7 +195,7 @@ export default function Learn() {
                                     <SwiperSlide key={cIdx}>
                                         <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-slate-200 shadow-sm">
                                             <h3 className="text-xl font-black text-slate-800 mb-3">{c.title}</h3>
-                                            <p className="text-slate-600 mb-6">{c.content}</p>
+                                            <p className="text-slate-600 mb-6">{formatText(c.content)}</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {c.formula.split(' ').map((move, mIdx) => (
                                                     <code key={mIdx} className="px-3 py-2 bg-slate-900 text-amber-400 rounded-lg font-mono font-black">
