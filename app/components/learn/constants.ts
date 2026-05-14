@@ -188,23 +188,23 @@ export const STEPS: Step[] = [
         cases: [
           {
             id: 1,
-            title: "Trường hợp 1: Ưu tiên TH này",
-            content: "1 mặt có 2 viên góc đúng, ta để mặt đó sang bên tay trái và xoay công thức sau",
+            title: "Trường hợp 1:",
+            content: "2 viên góc đúng nằm liền kề nhau, ta để mặt đó sang bên tay trái và xoay công thức sau",
             formula: "R U R' F' R U R' U' R' F R2 U' R' U'",
             initMoves: []
           },
           {
             id: 2,
             title: "Trường hợp 2:",
-            content: "1 mặt có 1 viên góc đúng và 1 viên cạnh đúng như mô phỏng, ta để mặt đó đối diện và xoay công thức sau",
-            formula: "R U R' F' R U R' U' R' F R2 U' R' U'",
+            content: "2 viên góc đúng và nhưng nằm chéo góc. Ta chọn mặt có 1 cạnh đúng và 1 góc đúng rồi để mặt đó đối diện và xoay công thức sau để đưa về **trường hợp 1**",
+            formula: "R U R' F' R U R' U' R' F R2 U' R'",
             initMoves: []
           },
           {
             id: 3,
             title: "Trường hợp 3",
-            content: "Trạng thái rubik không giống 2 trường hợp trên, ta chọn 1 mặt bất kỳ và xoay công thức sau cho đến khi xuât hiện trường hợp 1 hoặc 2",
-            formula: "R U R' F' R U R' U' R' F R2 U' R' U'",
+            content: "Không có viên góc nào đúng, ta chọn 1 mặt bất kỳ và xoay công thức sau cho đến khi xuât hiện trường hợp 1 hoặc 2",
+            formula: "R U R' F' R U R' U' R' F R2 U' R'",
             initMoves: []
           }
         ]

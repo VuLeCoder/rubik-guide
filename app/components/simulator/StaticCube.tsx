@@ -297,17 +297,26 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
                             if (x === 0 && z === -1) s[5] = COLORS.left;   // B-edge (Red)
                             if (x === -1 && z === -1) s[5] = COLORS.back;   // BL (Blue)
                         } else if (caseId === 2) {
-                            // Case 2: 1 corner and 1 edge correct (Block) on Front-Right
-                            // FR corner: Orange-Green (Solved) | F-edge: Green (Solved)
-                            if (x === 1 && z === 1) { s[0] = COLORS.right; s[4] = COLORS.front; }
-                            if (x === 0 && z === 1) s[4] = COLORS.front;
-                            // Other pieces shuffled uniquely
-                            if (x === -1 && z === 1) { s[1] = COLORS.left; s[4] = COLORS.back; } // FL
-                            if (x === -1 && z === -1) { s[1] = COLORS.left; s[5] = COLORS.front; } // BL
-                            if (x === 1 && z === -1) { s[0] = COLORS.right; s[5] = COLORS.back; } // BR
-                            if (x === -1 && z === 0) s[1] = COLORS.right; // L-edge: Orange
-                            if (x === 1 && z === 0) s[0] = COLORS.left;   // R-edge: Red
-                            if (x === 0 && z === -1) s[5] = COLORS.back;  // B-edge: Blue
+                            // Case 2: New specific requested pattern
+                            // Red face (Left, index 1): Red - Orange - Orange
+                            if (x === -1 && z === -1) s[1] = COLORS.left;   // BL
+                            if (x === -1 && z === 0)  s[1] = COLORS.right;  // L-edge (Orange)
+                            if (x === -1 && z === 1)  s[1] = COLORS.right;  // FL (Orange)
+
+                            // Green face (Front, index 4): Blue - Green - Green
+                            if (x === -1 && z === 1) s[4] = COLORS.back;   // FL (Blue)
+                            if (x === 0 && z === 1)  s[4] = COLORS.front;  // F-edge (Green)
+                            if (x === 1 && z === 1)  s[4] = COLORS.front;  // FR (Green)
+
+                            // Orange face (Right, index 0): Orange - Blue - Red
+                            if (x === 1 && z === 1)  s[0] = COLORS.right;  // FR (Orange)
+                            if (x === 1 && z === 0)  s[0] = COLORS.back;   // R-edge (Blue)
+                            if (x === 1 && z === -1) s[0] = COLORS.left;   // BR (Red)
+
+                            // Blue face (Back, index 5): Green - Red - Blue
+                            if (x === 1 && z === -1) s[5] = COLORS.front;  // BR (Green)
+                            if (x === 0 && z === -1) s[5] = COLORS.left;   // B-edge (Red)
+                            if (x === -1 && z === -1) s[5] = COLORS.back;   // BL (Blue)
                         } else {
                             // Case 3: No patterns, all unique pieces
                             if (x === -1 && z === 1) { s[1] = COLORS.right; s[4] = COLORS.back; } 
