@@ -270,36 +270,69 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
                 const currentStickers = [...c.stickers];
 
                 if (isTopLayer) {
-                    // Start with grayed out sides, but top is yellow
-                    let showIndices = [2]; // 2 is top (Yellow)
-
+                    const s = [...currentStickers];
+                    // s indices: 0:R, 1:L, 2:U, 3:D, 4:F, 5:B
+                    // Colors: R:Orange, L:Red, U:Yellow, D:White, F:Green, B:Blue
+                    
                     if (subStep === 0) { // Hoán vị góc
                         if (caseId === 1) {
-                            // 2 corners correct on one side (Left face: index 1)
-                            if (x === -1 && Math.abs(z) === 1) {
-                                showIndices.push(1);
-                            }
+                            // Case 1: Specific requested pattern (Headlights on Red face)
+                            // Red face (Left, index 1): Red - Orange - Red
+                            if (x === -1 && z === -1) s[1] = COLORS.left;   // BL
+                            if (x === -1 && z === 0)  s[1] = COLORS.right;  // L-edge (Orange)
+                            if (x === -1 && z === 1)  s[1] = COLORS.left;   // FL
+
+                            // Green face (Front, index 4): Green - Blue - Orange
+                            if (x === -1 && z === 1) s[4] = COLORS.front;  // FL
+                            if (x === 0 && z === 1)  s[4] = COLORS.back;   // F-edge (Blue)
+                            if (x === 1 && z === 1)  s[4] = COLORS.right;  // FR (Orange)
+
+                            // Orange face (Right, index 0): Blue - Green - Green
+                            if (x === 1 && z === 1)  s[0] = COLORS.back;   // FR (Blue)
+                            if (x === 1 && z === 0)  s[0] = COLORS.front;  // R-edge (Green)
+                            if (x === 1 && z === -1) s[0] = COLORS.front;  // BR (Green)
+
+                            // Blue face (Back, index 5): Orange - Red - Blue
+                            if (x === 1 && z === -1) s[5] = COLORS.right;  // BR (Orange)
+                            if (x === 0 && z === -1) s[5] = COLORS.left;   // B-edge (Red)
+                            if (x === -1 && z === -1) s[5] = COLORS.back;   // BL (Blue)
                         } else if (caseId === 2) {
-                            // 1 corner and 1 edge correct on one side (Front face: index 4)
-                            if (z === 1 && (x === 1 || x === 0)) {
-                                showIndices.push(4);
-                            }
+                            // Case 2: 1 corner and 1 edge correct (Block) on Front-Right
+                            // FR corner: Orange-Green (Solved) | F-edge: Green (Solved)
+                            if (x === 1 && z === 1) { s[0] = COLORS.right; s[4] = COLORS.front; }
+                            if (x === 0 && z === 1) s[4] = COLORS.front;
+                            // Other pieces shuffled uniquely
+                            if (x === -1 && z === 1) { s[1] = COLORS.left; s[4] = COLORS.back; } // FL
+                            if (x === -1 && z === -1) { s[1] = COLORS.left; s[5] = COLORS.front; } // BL
+                            if (x === 1 && z === -1) { s[0] = COLORS.right; s[5] = COLORS.back; } // BR
+                            if (x === -1 && z === 0) s[1] = COLORS.right; // L-edge: Orange
+                            if (x === 1 && z === 0) s[0] = COLORS.left;   // R-edge: Red
+                            if (x === 0 && z === -1) s[5] = COLORS.back;  // B-edge: Blue
+                        } else {
+                            // Case 3: No patterns, all unique pieces
+                            if (x === -1 && z === 1) { s[1] = COLORS.right; s[4] = COLORS.back; } 
+                            if (x === 1 && z === 1) { s[0] = COLORS.left; s[4] = COLORS.front; }
+                            if (x === -1 && z === -1) { s[1] = COLORS.left; s[5] = COLORS.front; }
+                            if (x === 1 && z === -1) { s[0] = COLORS.right; s[5] = COLORS.back; }
+                            if (x === -1 && z === 0) s[1] = COLORS.left;
+                            if (x === 1 && z === 0) s[0] = COLORS.right;
+                            if (x === 0 && z === 1) s[4] = COLORS.back;
+                            if (x === 0 && z === -1) s[5] = COLORS.front;
                         }
-                        // Case 3: No colors on LL sides (only top face index 2)
-                    } else if (subStep === 1) { // Hoán vị cạnh
-                        // For Hoán vị cạnh, usually we have one full side correct.
+                    } else {
+                        // Keep current gray logic for subStep 1 (edges) or implement similarly if needed
+                        let showIndices = [2]; 
                         if (caseId === 1 || caseId === 2) {
-                            // Let's say Back face is fully correct (index 5)
                             if (z === -1) showIndices.push(5);
                         }
+                        return {
+                            ...c,
+                            stickers: currentStickers.map((s, i) => 
+                                (showIndices.includes(i) || s === COLORS.inner) ? s : COLORS.gray
+                            )
+                        };
                     }
-
-                    return {
-                        ...c,
-                        stickers: currentStickers.map((s, i) => 
-                            (showIndices.includes(i) || s === COLORS.inner) ? s : COLORS.gray
-                        )
-                    };
+                    return { ...c, stickers: s };
                 }
 
                 // Layers 1 & 2: Show fully
