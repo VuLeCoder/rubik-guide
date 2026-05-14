@@ -86,7 +86,16 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
 
       case 4: { defaultPos = CAM_POS.U; break; }
       case 5: { defaultPos = new THREE.Vector3(3, 5, 5); break; }
-      case 6: { defaultPos = CAM_POS.U; break; }
+      case 6: { 
+        if (subStep === 0) {
+            if (caseId === 1) defaultPos = new THREE.Vector3(-5, 4, 5); // See Left + Front + Top
+            else if (caseId === 2) defaultPos = new THREE.Vector3(3, 4, 6); // Frontal
+            else defaultPos = new THREE.Vector3(5, 5, 5);
+        } else {
+            defaultPos = new THREE.Vector3(5, 5, 5);
+        }
+        break; 
+      }
     }
     
     // Use functional update and distance check to avoid redundant state updates
@@ -148,8 +157,6 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
         initialMoveQueue.current = ["U'", "F2", "U'", "L2", "B2", "U'", "R2"];
         moveQueue.current = [...initialMoveQueue.current];
       }
-    } else if (stepId === 6) {
-        initialState = generateInitialState(false);
     } else if (stepId === 2) {
         initialState = generateInitialState(false).map(c => {
             const { x, y, z } = c.pos;
@@ -256,6 +263,49 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
                 // Layers 1 & 2: Show fully
                 return { ...c, stickers: currentStickers };
             }
+
+            // For Step 6: Hoán vị
+            if (stepId === 6) {
+                const isTopLayer = y === 1;
+                const currentStickers = [...c.stickers];
+
+                if (isTopLayer) {
+                    // Start with grayed out sides, but top is yellow
+                    let showIndices = [2]; // 2 is top (Yellow)
+
+                    if (subStep === 0) { // Hoán vị góc
+                        if (caseId === 1) {
+                            // 2 corners correct on one side (Left face: index 1)
+                            if (x === -1 && Math.abs(z) === 1) {
+                                showIndices.push(1);
+                            }
+                        } else if (caseId === 2) {
+                            // 1 corner and 1 edge correct on one side (Front face: index 4)
+                            if (z === 1 && (x === 1 || x === 0)) {
+                                showIndices.push(4);
+                            }
+                        }
+                        // Case 3: No colors on LL sides (only top face index 2)
+                    } else if (subStep === 1) { // Hoán vị cạnh
+                        // For Hoán vị cạnh, usually we have one full side correct.
+                        if (caseId === 1 || caseId === 2) {
+                            // Let's say Back face is fully correct (index 5)
+                            if (z === -1) showIndices.push(5);
+                        }
+                    }
+
+                    return {
+                        ...c,
+                        stickers: currentStickers.map((s, i) => 
+                            (showIndices.includes(i) || s === COLORS.inner) ? s : COLORS.gray
+                        )
+                    };
+                }
+
+                // Layers 1 & 2: Show fully
+                return { ...c, stickers: currentStickers };
+            }
+
             return c;
         });
     }
