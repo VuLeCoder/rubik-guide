@@ -329,17 +329,24 @@ const StaticCubeContent = ({ stepId, subStep, caseId, isPaused = false, setIsPau
                             if (x === 0 && z === -1) s[5] = COLORS.front;
                         }
                     } else {
-                        // Keep current gray logic for subStep 1 (edges) or implement similarly if needed
-                        let showIndices = [2]; 
-                        if (caseId === 1 || caseId === 2) {
-                            if (z === -1) showIndices.push(5);
+                        // Hoán vị cạnh (Substep 2)
+                        if (caseId === 1) {
+                            if (x === 0 && z === -1) s[5] = COLORS.right; // Back edge is Orange
+                            if (x === 1 && z === 0)  s[0] = COLORS.front; // Right edge is Green
+                            if (x === 0 && z === 1)  s[4] = COLORS.back;  // Front edge is Blue
+                            if (x === -1 && z === 0) s[1] = COLORS.left;  // Left edge is Red (Correct)
+                          } else if (caseId === 2) {
+                            if (x === 0 && z === -1) s[5] = COLORS.front; // Back edge is Green
+                            if (x === 1 && z === 0)  s[0] = COLORS.back;  // Right edge is Blue
+                            if (x === 0 && z === 1)  s[4] = COLORS.right; // Front edge is Orange
+                            if (x === -1 && z === 0) s[1] = COLORS.left;  // Left edge is Red (Correct)
+                        } else if (caseId === 3) {
+                            // TH3: Không có cạnh nào đúng (Hoán vị đối diện hoặc chéo)
+                            if (x === 0 && z === 1)  s[4] = COLORS.back;  // Front has Blue
+                            if (x === 0 && z === -1) s[5] = COLORS.front; // Back has Green
+                            if (x === 1 && z === 0)  s[0] = COLORS.left;  // Right has Red
+                            if (x === -1 && z === 0) s[1] = COLORS.right; // Left has Orange
                         }
-                        return {
-                            ...c,
-                            stickers: currentStickers.map((s, i) => 
-                                (showIndices.includes(i) || s === COLORS.inner) ? s : COLORS.gray
-                            )
-                        };
                     }
                     return { ...c, stickers: s };
                 }

@@ -199,13 +199,6 @@ export const STEPS: Step[] = [
             content: "2 viên góc đúng và nhưng nằm chéo góc. Ta chọn mặt có 1 cạnh đúng và 1 góc đúng rồi để mặt đó đối diện và xoay công thức sau để đưa về **trường hợp 1**",
             formula: "R U R' F' R U R' U' R' F R2 U' R'",
             initMoves: []
-          },
-          {
-            id: 3,
-            title: "Trường hợp 3",
-            content: "Không có viên góc nào đúng, ta chọn 1 mặt bất kỳ và xoay công thức sau cho đến khi xuât hiện trường hợp 1 hoặc 2",
-            formula: "R U R' F' R U R' U' R' F R2 U' R'",
-            initMoves: []
           }
         ]
       },
@@ -216,21 +209,21 @@ export const STEPS: Step[] = [
           {
             id: 1,
             title: "Trường hợp 1",
-            content: "Có 1 mặt hoàn thiện và các cạnh còn lại cần chuyển theo chiều kim đồng hồ",
+            content: "Có 1 mặt hoàn thiện (ví dụ: mặt Đỏ). Các cạnh còn lại cần chuyển theo chiều kim đồng hồ (Tâm Xanh dương có cạnh Cam, tâm Cam có cạnh Xanh lá, tâm Xanh lá có cạnh Xanh dương).",
             formula: "R2 U R U R' U' R' U' R' U R'",
             initMoves: []
           },
           {
             id: 2,
             title: "Trường hợp 2",
-            content: "Có 1 mặt hoàn thiện và các cạnh còn lại cần chuyển theo chiều ngược chiều kim đồng hồ",
+            content: "Có 1 mặt hoàn thiện (ví dụ: mặt Đỏ). Các cạnh còn lại cần chuyển theo chiều ngược chiều kim đồng hồ (Tâm Xanh dương có cạnh Xanh lá, tâm Cam có cạnh Xanh dương, tâm Xanh lá có cạnh Cam).",
             formula: "R U' R U R U R U' R' U' R2",
             initMoves: []
           },
           {
             id: 3,
             title: "Trường hợp 3",
-            content: "Không có mặt nào hoàn thiện. Trường hợp này dùng công thức của trường hợp 1 hoặc trường hợp 2 để xoay",
+            content: "Không có mặt nào hoàn thiện. Trường hợp này dùng công thức của trường hợp 1 hoặc trường hợp 2 để xoay đưa về 1 mặt đúng.",
             formula: "R U' R U R U R U' R' U' R2",
             initMoves: []
           }
