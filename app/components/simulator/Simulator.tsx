@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useCallback, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, ContactShadows, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
+import { OrbitControls, ContactShadows, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
 import * as THREE from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
@@ -12,6 +12,7 @@ import { ControlPanel } from './ControlPanel';
 
 const {PHYSICS, SCENE} = RUBIK_CONFIG;
 
+const MAX_QUEUE = 3;
 const tempVector = new THREE.Vector3();
 const tempMouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
@@ -35,6 +36,7 @@ export default function Simulator() {
     normal: THREE.Vector3;
     cubiePos: THREE.Vector3
   } | null>(null);
+  const [queueLength, setQueueLength] = useState(0);
 
   // Sync ref with state
   const setActiveMoveWithRef: React.Dispatch<React.SetStateAction<AnimatingLayer | null>> = useCallback((value) => {
@@ -98,6 +100,7 @@ export default function Simulator() {
   React.useEffect(() => {
     if (!activeMove && !isTransitioning.current && moveQueue.current.length > 0) {
       const nextMove = moveQueue.current.shift();
+      setQueueLength(moveQueue.current.length);
       if (nextMove) performMove(nextMove);
     }
   }, [activeMove, performMove]);
@@ -121,7 +124,7 @@ export default function Simulator() {
       newPos.y = Math.round(newPos.y);
       newPos.z = Math.round(newPos.z);
 
-      let s = [...cubie.stickers];
+      const s = [...cubie.stickers];
       let angle = targetAngle;
       while (angle < 0) angle += Math.PI * 2;
       const steps = Math.round(angle / (Math.PI / 2)) % 4;
@@ -146,7 +149,7 @@ export default function Simulator() {
   // Stable callback for pointer down
   const onPointerDown = useCallback((e: any) => {
     e.stopPropagation();
-    if (activeMoveRef.current || isTransitioning.current) return;
+    if (activeMoveRef.current || isTransitioning.current || moveQueue.current.length >= MAX_QUEUE) return;
     if (!e.object) return;
 
     if (controlsRef.current) {
@@ -215,7 +218,7 @@ export default function Simulator() {
       const currentAngle = (angleRaw / PHYSICS.DRAG_SENSITIVITY) * (Math.PI / 2);
       dragAngleRef.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, currentAngle));
     }
-  }, []);
+  }, [setActiveMoveWithRef]);
 
   const onPointerUp = useCallback(() => {
     if (controlsRef.current) {
@@ -239,23 +242,32 @@ export default function Simulator() {
       });
     }
     dragStart.current = null;
-  }, []);
+  }, [setActiveMoveWithRef]);
 
   const handleMove = useCallback((move: string) => {
-    if (isTransitioning.current || activeMove) {
+    // queue full => block input
+    if (moveQueue.current.length >= MAX_QUEUE) {
+      return;
+    }
+
+    // đang animating => push queue
+    if (isTransitioning.current || activeMoveRef.current) {
       moveQueue.current.push(move);
+      // sync UI
+      setQueueLength(moveQueue.current.length);
     } else {
       performMove(move);
     }
-  }, [activeMove, performMove]);
+  }, [performMove]);
 
   const resetAll = useCallback(() => {
     setCubies(generateInitialState());
     setHistory([]);
     moveQueue.current = [];
+    setQueueLength(0);
     setActiveMoveWithRef(null);
     isTransitioning.current = false;
-  }, []);
+  }, [setActiveMoveWithRef]);
 
   return (
     <div className="h-auto p-2 lg:p-4 flex items-center justify-center font-sans overflow-hidden">
@@ -307,7 +319,11 @@ export default function Simulator() {
           </Canvas>
         </div>
 
-        <ControlPanel onMove={handleMove} onReset={resetAll} />
+        <ControlPanel
+          onMove={handleMove}
+          onReset={resetAll}
+          disabled={queueLength >= MAX_QUEUE}
+        />
       </div>
 
       <style jsx global>{`
