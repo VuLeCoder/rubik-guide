@@ -238,7 +238,10 @@ export default function Learn() {
                   {/* SUB SWIPER */}
                   <Swiper
                     modules={[Pagination]}
-                    pagination={{ clickable: true }}
+                    pagination={{
+                      clickable: true,
+                      el: `.sub-pagination-${stepIdx}`,
+                    }}
                     nested
                     autoHeight
                     touchStartPreventDefault={false}
@@ -248,15 +251,10 @@ export default function Learn() {
                     }}
                     onSlideChange={(swiper) => {
                       setActiveSubStepIdx(swiper.activeIndex);
-
-                      // FIX: KHÔNG reset global case nữa
                       setIsPaused(true);
-
-                      mainSwiperRef.current?.updateAutoHeight(
-                        300
-                      );
+                      mainSwiperRef.current?.updateAutoHeight(300);
                     }}
-                    className="w-full pb-10"
+                    className="w-full relative"
                   >
                     {step.subSteps.map((sub, subIdx) => {
                       const caseKey = `${stepIdx}-${subIdx}`;
@@ -264,7 +262,7 @@ export default function Learn() {
                       return (
                         <SwiperSlide key={subIdx}>
                           <div className="flex flex-col">
-                            <div className="mb-6">
+                            <div className="mb-3">
                               <div className="flex items-center gap-2 mb-4">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                                   Phần {subIdx + 1} /{" "}
@@ -284,11 +282,12 @@ export default function Learn() {
 
                               {/* CASE SWIPER */}
                               {sub.cases && (
-                                <div className="mt-8">
+                                <div className="mt-8 relative">
                                   <Swiper
                                     modules={[Pagination]}
                                     pagination={{
                                       clickable: true,
+                                      el: `.case-pagination-${caseKey}`,
                                     }}
                                     nested
                                     touchStartPreventDefault={
@@ -316,7 +315,7 @@ export default function Learn() {
 
                                       setIsPaused(true);
                                     }}
-                                    className="w-full pb-10"
+                                    className="w-full"
                                   >
                                     {sub.cases.map(
                                       (c, cIdx) => (
@@ -335,6 +334,7 @@ export default function Learn() {
                                             <div className="flex flex-wrap gap-2">
                                               {c.formula
                                                 .split(" ")
+                                                .filter(m => m)
                                                 .map(
                                                   (
                                                     move,
@@ -358,6 +358,10 @@ export default function Learn() {
                                       )
                                     )}
                                   </Swiper>
+                                  {/* Custom Pagination for Cases */}
+                                  <div
+                                    className={`case-pagination-${caseKey} swiper-pagination bottom-0!`}
+                                  ></div>
                                 </div>
                               )}
 
@@ -404,6 +408,10 @@ export default function Learn() {
                       );
                     })}
                   </Swiper>
+                  {/* Custom Pagination for Sub-steps */}
+                  {/* <div
+                    className={`sub-pagination-${stepIdx} swiper-pagination bottom-0!`}
+                  ></div> */}
                 </div>
               </SwiperSlide>
             ))}
@@ -484,7 +492,7 @@ export default function Learn() {
       </main>
 
       {/* SHARED CANVAS */}
-      <div className="fixed inset-0 pointer-events-none z-[100]">
+      <div className="fixed inset-0 pointer-events-none z-100">
         <Canvas
           eventSource={
             containerRef as React.RefObject<HTMLElement>

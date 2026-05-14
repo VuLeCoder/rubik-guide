@@ -183,9 +183,58 @@ export const STEPS: Step[] = [
     title: "B6: Hoán vị", 
     subSteps: [
       {
-        title: "Về đích",
-        content: "Sắp xếp lại các góc và các cạnh cuối cùng để hoàn thành khối Rubik.",
-        formula: "R U R' F' R U R' U' R' F R2 U' R'"
+        title: "Hoán vị góc",
+        content: "Sắp xếp lại các viên góc ở tầng 3 về đúng vị trí. Xoay mặt trên cùng (U) sao cho:",
+        cases: [
+          {
+            id: 1,
+            title: "Trường hợp 1: Ưu tiên TH này",
+            content: "1 mặt có 2 viên góc đúng, ta để mặt đó sang bên tay trái và xoay công thức sau",
+            formula: "R U R' F' R U R' U' R' F R2 U' R",
+            initMoves: []
+          },
+          {
+            id: 2,
+            title: "Trường hợp 2:",
+            content: "1 mặt có 1 viên góc đúng và 1 viên cạnh đúng như mô phỏng, ta để mặt đó đối diện và xoay công thức sau",
+            formula: "R U R' F' R U R' U' R' F R2 U' R",
+            initMoves: []
+          },
+          {
+            id: 3,
+            title: "Trường hợp 3",
+            content: "Trạng thái rubik không giống 2 trường hợp trên, ta chọn 1 mặt bất kỳ và xoay công thức sau cho đến khi xuât hiện trường hợp 1 hoặc 2",
+            formula: "R U R' F' R U R' U' R' F R2 U' R",
+            initMoves: []
+          }
+        ]
+      },
+      {
+        title: "Hoán vị cạnh",
+        content: "Sắp xếp lại các viên cạnh ở tầng 3 về đúng vị trí để hoàn thành khối Rubik.",
+        cases: [
+          {
+            id: 1,
+            title: "Trường hợp 1",
+            content: "Có 1 mặt hoàn thiện và các cạnh còn lại cần chuyển theo chiều kim đồng hồ",
+            formula: "R2 U R U R' U' R' U' R' U R'",
+            initMoves: []
+          },
+          {
+            id: 2,
+            title: "Trường hợp 2",
+            content: "Có 1 mặt hoàn thiện và các cạnh còn lại cần chuyển theo chiều ngược chiều kim đồng hồ",
+            formula: "R U' R U R U R U' R' U' R2",
+            initMoves: []
+          },
+          {
+            id: 3,
+            title: "Trường hợp 3",
+            content: "Không có mặt nào hoàn thiện. Trường hợp này dùng công thức của trường hợp 1 hoặc trường hợp 2 để xoay",
+            formula: "R U' R U R U R U' R' U' R2",
+            initMoves: []
+          }
+        ]
       }
     ],
     color: "bg-red-600", 
