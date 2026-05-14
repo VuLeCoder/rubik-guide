@@ -25,7 +25,10 @@ export const RubikCube = memo(function RubikCube({ cubies, activeMove, setActive
 
     cubies.forEach((c) => {
       const val = activeMove.axis === 'x' ? c.pos.x : activeMove.axis === 'y' ? c.pos.y : c.pos.z;
-      if (Math.abs(val - activeMove.layer) <= PHYSICS.LAYER_THRESHOLD) {
+      const layers = Array.isArray(activeMove.layer) ? activeMove.layer : [activeMove.layer];
+      const isMoving = layers.some(l => Math.abs(val - l) <= PHYSICS.LAYER_THRESHOLD);
+      
+      if (isMoving) {
         moving.push(c);
       } else {
         staticList.push(c);

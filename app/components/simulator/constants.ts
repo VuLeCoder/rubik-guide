@@ -48,14 +48,13 @@ export interface CubieData {
 
 export interface AnimatingLayer {
   axis: 'x' | 'y' | 'z';
-  layer: number;
+  layer: number | number[]; // Support multiple layers for wide moves
   angle: number;
   target: number;
   isDragging?: boolean;
 }
 
 export const generateInitialState = (grayedOut: boolean = false): CubieData[] => {
-  const baseColor = grayedOut ? COLORS.gray : COLORS.inner;
   return Array.from({ length: 27 }).map((_, i) => {
     const x = (i % 3) - 1;
     const y = Math.floor((i / 3) % 3) - 1;
@@ -80,7 +79,7 @@ export interface RubikCubeProps {
   cubies: CubieData[];
   activeMove: AnimatingLayer | null;
   setActiveMove: React.Dispatch<React.SetStateAction<AnimatingLayer | null>>;
-  onAnimationEnd: (axis: 'x' | 'y' | 'z', layer: number, target: number) => void;
+  onAnimationEnd: (axis: 'x' | 'y' | 'z', layer: number | number[], target: number) => void;
   onPointerDown: (e: any) => void;
   dragAngleRef: React.MutableRefObject<number>; 
 }

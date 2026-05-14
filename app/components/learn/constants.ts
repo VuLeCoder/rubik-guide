@@ -121,8 +121,58 @@ export const STEPS: Step[] = [
     subSteps: [
       {
         title: "Full mặt vàng",
-        content: "Sử dụng công thức để lật các góc vàng lên trên cùng.",
-        formula: "R U R' U R U2 R'"
+        content: "Chỉ cần dùng 1 công thức Sune duy nhất cho cả 7 trường hợp để lật toàn bộ các góc vàng lên trên. Lưu ý hướng đặt khối Rubik trước khi xoay.",
+        cases: [
+          {
+            id: 1,
+            title: "Trường hợp 1:",
+            content: "Có 1 góc vàng ở mặt trên (đặt ở góc trước-trái). Viên góc ở trước-phải có mặt vàng hướng về phía trước.",
+            formula: "R U R' U R U2 R'",
+            initMoves: []
+          },
+          {
+            id: 2,
+            title: "Trường hợp 2:",
+            content: "Có 1 góc vàng ở mặt trên (đặt ở góc sau-phải). Viên góc ở trước-phải có mặt vàng hướng sang bên phải.",
+            formula: "R U R' U R U2 R'",
+            initMoves: []
+          },
+          {
+            id: 3,
+            title: "Trường hợp 3:",
+            content: "Không có góc vàng nào ở mặt trên. Có 2 cặp đèn pha ở mặt trước và mặt sau.",
+            formula: "R U R' U R U2 R'",
+            initMoves: []
+          },
+          {
+            id: 4,
+            title: "Trường hợp 4:",
+            content: "Không có góc vàng nào ở mặt trên. Có 1 cặp đèn pha bên trái, 2 góc còn lại hướng trước và sau.",
+            formula: "R U R' U R U2 R'",
+            initMoves: []
+          },
+          {
+            id: 5,
+            title: "Trường hợp 5:",
+            content: "Có 2 góc vàng ở mặt trên (phía sau). 2 góc phía trước hướng về phía trước tạo thành đèn pha.",
+            formula: "R U R' U R U2 R'",
+            initMoves: []
+          },
+          {
+            id: 6,
+            title: "Trường hợp 6:",
+            content: "Có 2 góc vàng ở mặt trên (bên phải). 2 góc bên trái hướng về trước và sau.",
+            formula: "R U R' U R U2 R'",
+            initMoves: []
+          },
+          {
+            id: 7,
+            title: "Trường hợp 7:",
+            content: "Có 2 góc vàng ở mặt trên (nằm chéo nhau). Các góc còn lại hướng về các phía khác nhau.",
+            formula: "R U R' U R U2 R'",
+            initMoves: []
+          }
+        ]
       }
     ],
     color: "bg-orange-500", 
