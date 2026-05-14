@@ -102,13 +102,21 @@ export default function Simulator() {
     }
   }, [activeMove, performMove]);
 
-  const finalizeMove = useCallback((axis: 'x' | 'y' | 'z', layer: number, targetAngle: number) => {
+  const finalizeMove = useCallback((axis: 'x' | 'y' | 'z', layer: number | number[], targetAngle: number) => {
     setCubies(prev => prev.map(cubie => {
       const val = axis === 'x' ? cubie.pos.x : axis === 'y' ? cubie.pos.y : cubie.pos.z;
-      if (Math.abs(val - layer) > PHYSICS.LAYER_THRESHOLD) return cubie;
+      
+      // Check if the cubie is in the target layer(s)
+      const isInLayer = Array.isArray(layer) 
+        ? layer.some(l => Math.abs(val - l) <= PHYSICS.LAYER_THRESHOLD)
+        : Math.abs(val - layer) <= PHYSICS.LAYER_THRESHOLD;
+
+      if (!isInLayer) return cubie;
 
       const rotationAxis = new THREE.Vector3(axis === 'x' ? 1 : 0, axis === 'y' ? 1 : 0, axis === 'z' ? 1 : 0);
       const newPos = cubie.pos.clone().applyAxisAngle(rotationAxis, targetAngle);
+      
+      // Round to nearest integer to snap to the grid
       newPos.x = Math.round(newPos.x);
       newPos.y = Math.round(newPos.y);
       newPos.z = Math.round(newPos.z);
