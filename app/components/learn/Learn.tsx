@@ -280,88 +280,135 @@ export default function Learn() {
                                 {formatText(sub.content)}
                               </p>
 
-                              {/* CASE SWIPER */}
+                              {/* CASE SWIPER SECTION */}
                               {sub.cases && (
-                                <div className="mt-8 relative">
-                                  <Swiper
-                                    modules={[Pagination]}
-                                    pagination={{
-                                      clickable: true,
-                                      el: `.case-pagination-${caseKey}`,
-                                    }}
-                                    nested
-                                    touchStartPreventDefault={
-                                      false
-                                    }
-                                    touchReleaseOnEdges
-                                    watchSlidesProgress
-                                    onSwiper={(swiper) => {
-                                      caseSwiperRefs.current[
-                                        caseKey
-                                      ] = swiper;
-                                    }}
-                                    onSlideChange={(swiper) => {
-                                      setActiveCaseIndexes(
-                                        (prev) => ({
-                                          ...prev,
-                                          [caseKey]:
-                                            swiper.activeIndex,
-                                        })
-                                      );
-
-                                      setResetKey(
-                                        (prev) => prev + 1
-                                      );
-
-                                      setIsPaused(true);
-                                    }}
-                                    className="w-full"
-                                  >
-                                    {sub.cases.map(
-                                      (c, cIdx) => (
-                                        <SwiperSlide key={cIdx}>
-                                          <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-slate-200 shadow-sm">
-                                            <h3 className="text-xl font-black text-slate-800 mb-3">
-                                              {c.title}
-                                            </h3>
-
-                                            <p className="text-slate-600 mb-6">
-                                              {formatText(
-                                                c.content
-                                              )}
-                                            </p>
-
-                                            <div className="flex flex-wrap gap-2">
-                                              {c.formula
-                                                .split(" ")
-                                                .filter(m => m)
-                                                .map(
-                                                  (
-                                                    move,
-                                                    mIdx
-                                                  ) => (
-                                                    <code
-                                                      key={
-                                                        mIdx
-                                                      }
-                                                      className="px-3 py-2 bg-slate-900 text-amber-400 rounded-lg font-mono font-black"
-                                                    >
-                                                      {
-                                                        move
-                                                      }
-                                                    </code>
-                                                  )
-                                                )}
-                                            </div>
+                                <div className="mt-8 flex flex-col gap-6">
+                                  {/* Horizontal Tabs - Case Selection (Only for Step 5) */}
+                                  {step.id === 5 && (
+                                    <div className="flex items-center gap-3 overflow-x-auto pb-4 custom-scrollbar">
+                                      {sub.cases.map((c, cIdx) => (
+                                        <button
+                                          key={cIdx}
+                                          onClick={() =>
+                                            caseSwiperRefs.current[
+                                              caseKey
+                                            ]?.slideTo(cIdx)
+                                          }
+                                          className={`flex items-center justify-center p-2 rounded-2xl border-2 transition-all flex-shrink-0 w-20 h-20 ${
+                                            currentCaseIdx === cIdx
+                                              ? "border-amber-400 bg-amber-50/50 shadow-md ring-4 ring-amber-400/5"
+                                              : "border-slate-200 bg-white/50 hover:border-amber-200 hover:bg-white"
+                                          }`}
+                                        >
+                                          <div
+                                            className={`w-full h-full rounded-xl overflow-hidden bg-white flex-shrink-0 border transition-colors flex items-center justify-center ${
+                                              currentCaseIdx ===
+                                              cIdx
+                                                ? "border-amber-200"
+                                                : "border-slate-100"
+                                            }`}
+                                          >
+                                            {c.image ? (
+                                              <img
+                                                src={c.image}
+                                                alt={c.title}
+                                                className="w-full h-full object-contain p-1"
+                                              />
+                                            ) : (
+                                              <div className="w-full h-full flex items-center justify-center text-xs font-black text-slate-400">
+                                                #{c.id}
+                                              </div>
+                                            )}
                                           </div>
-                                        </SwiperSlide>
-                                      )
-                                    )}
-                                  </Swiper>
-                                  {/* Custom Pagination for Cases */}
-                                  <div
-                                    className={`case-pagination-${caseKey} swiper-pagination bottom-0!`}
-                                  ></div>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  {/* Swiper Wrapper */}
+                                  <div className="w-full relative">
+                                    <Swiper
+                                      modules={[Pagination]}
+                                      pagination={{
+                                        clickable: true,
+                                        el: `.case-pagination-${caseKey}`,
+                                      }}
+                                      nested
+                                      touchStartPreventDefault={
+                                        false
+                                      }
+                                      touchReleaseOnEdges
+                                      watchSlidesProgress
+                                      onSwiper={(swiper) => {
+                                        caseSwiperRefs.current[
+                                          caseKey
+                                        ] = swiper;
+                                      }}
+                                      onSlideChange={(swiper) => {
+                                        setActiveCaseIndexes(
+                                          (prev) => ({
+                                            ...prev,
+                                            [caseKey]:
+                                              swiper.activeIndex,
+                                          })
+                                        );
+
+                                        setResetKey(
+                                          (prev) => prev + 1
+                                        );
+
+                                        setIsPaused(true);
+                                      }}
+                                      className="w-full"
+                                    >
+                                      {sub.cases.map(
+                                        (c, cIdx) => (
+                                          <SwiperSlide key={cIdx}>
+                                            <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-slate-200 shadow-sm h-full">
+                                              <h3 className="text-xl font-black text-slate-800 mb-3">
+                                                {c.title}
+                                              </h3>
+
+                                              <p className="text-slate-600 mb-6">
+                                                {formatText(
+                                                  c.content
+                                                )}
+                                              </p>
+
+                                              <div className="flex flex-wrap gap-2">
+                                                {c.formula
+                                                  .split(" ")
+                                                  .filter(
+                                                    (m) => m
+                                                  )
+                                                  .map(
+                                                    (
+                                                      move,
+                                                      mIdx
+                                                    ) => (
+                                                      <code
+                                                        key={
+                                                          mIdx
+                                                        }
+                                                        className="px-3 py-2 bg-slate-900 text-amber-400 rounded-lg font-mono font-black"
+                                                      >
+                                                        {
+                                                          move
+                                                        }
+                                                      </code>
+                                                    )
+                                                  )}
+                                              </div>
+                                            </div>
+                                          </SwiperSlide>
+                                        )
+                                      )}
+                                    </Swiper>
+                                    {/* Custom Pagination for Cases */}
+                                    <div
+                                      className={`case-pagination-${caseKey} swiper-pagination bottom-0!`}
+                                    ></div>
+                                  </div>
                                 </div>
                               )}
 

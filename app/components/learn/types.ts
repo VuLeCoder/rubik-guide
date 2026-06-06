@@ -4,6 +4,7 @@ export interface Case {
   content: string;
   formula: string;
   initMoves?: string[];
+  image?: string;
 }
 
 export interface SubStep {
