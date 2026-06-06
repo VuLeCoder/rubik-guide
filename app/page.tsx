@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Menu, X, Box, BookOpen, Timer as TimerIcon } from 'lucide-react';
+import Image from 'next/image';
+import rubikLogo from '@/public/logo_rubik.jpg';
+import { Menu, X, Box, BookOpen, Timer as TimerIcon, User } from 'lucide-react';
 
 import dynamic from 'next/dynamic';
 
@@ -14,6 +16,7 @@ const Learn = dynamic(() => import('./components/learn/Learn'), {
   loading: () => <div className="h-96 flex items-center justify-center text-slate-400 font-bold animate-pulse">Loading Lessons...</div>
 });
 const Timer = dynamic(() => import('./components/Timer'), { ssr: false });
+const AboutMe = dynamic(() => import('./components/AboutMe'), { ssr: false });
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('simulator');
@@ -23,6 +26,7 @@ export default function Home() {
     { id: 'simulator', name: 'Simulator', icon: <Box size={18} /> },
     { id: 'learn', name: 'Learn', icon: <BookOpen size={18} /> },
     { id: 'timer', name: 'Timer', icon: <TimerIcon size={18} /> },
+    { id: 'about', name: 'About Me', icon: <User size={18} /> },
   ];
 
   return (
@@ -33,7 +37,13 @@ export default function Home() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="shrink-0 flex items-center">
-              <img src="logo_rubik.jpg" alt="RubikCommunity Logo" className="h-12 w-auto" />
+              {/* <img src="logo_rubik.jpg" alt="RubikCommunity Logo" className="h-12 w-auto" /> */}
+              <Image 
+                src={rubikLogo} 
+                alt="RubikCommunity Logo" 
+                className="h-12 w-auto" 
+                priority
+              />
             </div>
 
             {/* Desktop Menu */}
@@ -95,6 +105,7 @@ export default function Home() {
           {activeTab === 'simulator' && <Simulator />}
           {activeTab === 'learn' && <Learn />}
           {activeTab === 'timer' && <Timer />}
+          {activeTab === 'about' && <AboutMe />}
         </div>
       </main>
 
