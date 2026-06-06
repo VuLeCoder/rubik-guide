@@ -190,7 +190,7 @@ export const STEPS: Step[] = [
             id: 1,
             title: "Trường hợp 1:",
             content: "2 viên góc đúng nằm liền kề nhau, ta để mặt đó sang bên tay trái và xoay công thức sau",
-            formula: "R U R' F' R U R' U' R' F R2 U' R' U'",
+            formula: "R U R' F' R U R' U' R' F R2 U' R'",
             initMoves: []
           },
           {
