@@ -16,7 +16,7 @@ const Learn = dynamic(() => import('./components/learn/Learn'), {
   loading: () => <div className="h-96 flex items-center justify-center text-slate-400 font-bold animate-pulse">Loading Lessons...</div>
 });
 const Timer = dynamic(() => import('./components/Timer'), { ssr: false });
-const AboutMe = dynamic(() => import('./components/AboutMe'), { ssr: false });
+const AboutMe = dynamic(() => import('./components/about-me/AboutMe'), { ssr: false });
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('simulator');
