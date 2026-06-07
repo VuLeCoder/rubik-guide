@@ -65,12 +65,12 @@ Một nền tảng mô phỏng và học giải Rubik tương tác, hiệu năng
 
 ```text
 app/
-├── components/          # Các component React có thể tái sử dụng
+├── components/          
 │   ├── simulator/       # Logic & component cho khối Rubik 3D
-│   ├── learn/           # Nội dung giáo dục & hướng dẫn
+│   ├── learn/           # Hướng dẫn các bước giải
 │   ├── about-me/        # Phần giới thiệu bản thân
 │   └── Timer.tsx        # Logic & giao diện bộ bấm giờ
-├── globals.css          # Styles toàn cục & chỉ thị Tailwind
+├── globals.css          # Styles toàn cục & Tailwind
 ├── layout.tsx           # Layout gốc
 └── page.tsx             # Điểm vào chính với điều hướng Tab
 public/                  # Tài nguyên tĩnh (hình ảnh, icon)
