@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { Fingerprint } from 'lucide-react';
 
 type TimerState = 'idle' | 'ready' | 'running' | 'stopped';
 
@@ -60,76 +61,83 @@ export default function Timer() {
     modalOpenRef.current = showGuide;
   };
 
+  const isInteractiveElement = (target: EventTarget | null) => {
+    if (!target) return false;
+    const element = target as HTMLElement;
+    return element.tagName === 'BUTTON' || element.closest('button') !== null;
+  };
+
+  const handleDown = (e: KeyboardEvent | TouchEvent | React.TouchEvent) => {
+    if (modalOpenRef.current) return;
+
+    if (e instanceof KeyboardEvent) {
+      if (isInteractiveElement(e.target)) return;
+      if (e.code !== 'Space') return;
+      if (e.repeat) return;
+      e.preventDefault();
+    } else {
+      // Touch event from localized trigger
+      if ('cancelable' in e && e.cancelable) {
+        (e as any).preventDefault();
+      }
+    }
+
+    const currentState = stateRef.current;
+
+    if (currentState === 'idle') {
+      setTime(0);
+      updateState('ready');
+    } else if (currentState === 'running') {
+      const finalTime = Date.now() - startTimeRef.current;
+      setTime(finalTime);
+      
+      setHistory((prev: number[]) => {
+        const newHistory = [finalTime, ...prev];
+        localStorage.setItem('rubik-timer-history', JSON.stringify(newHistory));
+        return newHistory;
+      });
+
+      updateState('stopped');
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    } else if (currentState === 'stopped') {
+      setTime(0);
+      updateState('idle'); 
+    }
+  };
+
+  const handleUp = (e: KeyboardEvent | TouchEvent | React.TouchEvent) => {
+    if (modalOpenRef.current) return;
+    
+    if (e instanceof KeyboardEvent) {
+      if (isInteractiveElement(e.target)) return;
+      if (e.code !== 'Space') return;
+    }
+
+    const currentState = stateRef.current;
+
+    if (currentState === 'ready') {
+      updateState('running');
+      startTimeRef.current = Date.now(); 
+      
+      timerRef.current = setInterval(() => {
+        setTime(Date.now() - startTimeRef.current);
+      }, 10);
+    }
+  };
+
   useEffect(() => {
-    const isInteractiveElement = (target: EventTarget | null) => {
-      if (!target) return false;
-      const element = target as HTMLElement;
-      return element.tagName === 'BUTTON' || element.closest('button') !== null;
-    };
+    const onKeyDown = (e: KeyboardEvent) => handleDown(e);
+    const onKeyUp = (e: KeyboardEvent) => handleUp(e);
 
-    const handleDown = (e: KeyboardEvent | TouchEvent) => {
-      if (modalOpenRef.current) return;
-      if (isInteractiveElement(e.target)) return;
-
-      if (e instanceof KeyboardEvent) {
-        if (e.code !== 'Space') return;
-        if (e.repeat) return;
-        e.preventDefault();
-      }
-
-      const currentState = stateRef.current;
-
-      if (currentState === 'idle') {
-        setTime(0);
-        updateState('ready');
-      } else if (currentState === 'running') {
-        const finalTime = Date.now() - startTimeRef.current;
-        setTime(finalTime);
-        
-        setHistory((prev: number[]) => {
-          const newHistory = [finalTime, ...prev];
-          localStorage.setItem('rubik-timer-history', JSON.stringify(newHistory));
-          return newHistory;
-        });
-
-        updateState('stopped');
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-      } else if (currentState === 'stopped') {
-        setTime(0);
-        updateState('idle'); 
-      }
-    };
-
-    const handleUp = (e: KeyboardEvent | TouchEvent) => {
-      if (modalOpenRef.current) return;
-      if (isInteractiveElement(e.target)) return;
-      if (e instanceof KeyboardEvent && e.code !== 'Space') return;
-
-      const currentState = stateRef.current;
-
-      if (currentState === 'ready') {
-        updateState('running');
-        startTimeRef.current = Date.now(); 
-        
-        timerRef.current = setInterval(() => {
-          setTime(Date.now() - startTimeRef.current);
-        }, 10);
-      }
-    };
-
-    window.addEventListener('keydown', handleDown);
-    window.addEventListener('keyup', handleUp);
-    window.addEventListener('touchstart', handleDown, { passive: false });
-    window.addEventListener('touchend', handleUp);
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
 
     return () => {
-      window.removeEventListener('keydown', handleDown);
-      window.removeEventListener('keyup', handleUp);
-      window.removeEventListener('touchstart', handleDown);
-      window.removeEventListener('touchend', handleUp);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
@@ -169,31 +177,48 @@ export default function Timer() {
     timerState === 'running' ? 'text-slate-900 scale-110' : 
     'text-slate-900';
 
+  const triggerAreaColorClass = 
+    timerState === 'ready' ? 'bg-emerald-50/50 border-emerald-200' :
+    timerState === 'running' ? 'bg-slate-50/30 border-transparent' :
+    'bg-slate-50/50 border-slate-200';
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 m-5 max-w-7xl mx-auto">
       <div className="lg:col-span-3 relative flex flex-col items-center justify-center py-24 bg-white rounded-3xl shadow-md border border-slate-300 animate-in fade-in duration-500 select-none overflow-hidden min-h-[500px]">
         
         <button 
           onClick={() => toggleGuide(true)}
-          className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-full font-extrabold text-lg transition-colors z-10"
+          className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-full font-extrabold text-lg transition-colors z-20"
           title="Hướng dẫn sử dụng"
         >
           ?
         </button>
 
-        <h2 className="text-xl text-slate-500 mb-6 uppercase tracking-widest font-extrabold">Rubik Timer</h2>
-        
-        <div className={`text-7xl md:text-9xl font-mono mb-6 font-bold transition-all duration-200 ${timerColorClass}`}>
-          {formatTime(time)}
+        {/* Central Touch Trigger for Mobile */}
+        <div 
+          className={`relative flex flex-col items-center justify-center p-8 md:p-12 rounded-3xl border-2 border-dashed transition-all duration-300 z-10 touch-none cursor-pointer ${triggerAreaColorClass} active:scale-[0.98]`}
+          onTouchStart={(e) => handleDown(e)}
+          onTouchEnd={(e) => handleUp(e)}
+        >
+          <h2 className="text-xl text-slate-500 mb-6 uppercase tracking-widest font-extrabold pointer-events-none">Rubik Timer</h2>
+          
+          <div className={`text-7xl md:text-9xl font-mono mb-6 font-bold transition-all duration-200 pointer-events-none ${timerColorClass}`}>
+            {formatTime(time)}
+          </div>
+
+          <p className="text-slate-400 font-medium h-6 text-sm md:text-base animate-in fade-in pointer-events-none text-center">
+            {timerState === 'stopped' ? 'Nhấn Space / Chạm để xóa kết quả' : 
+             timerState === 'idle' ? 'Nhấn Space / Chạm giữ để chuẩn bị' : ''}
+          </p>
+
+          {/* Visual Hint for Mobile */}
+          <div className="absolute top-4 left-4 opacity-20 pointer-events-none">
+            <Fingerprint size={16} />
+          </div>
         </div>
 
-        <p className="text-slate-400 font-medium h-6 text-sm md:text-base animate-in fade-in">
-          {timerState === 'stopped' ? 'Nhấn Space / Chạm màn hình để xóa kết quả' : 
-           timerState === 'idle' ? 'Nhấn / Chạm giữ để chuẩn bị' : ''}
-        </p>
-
         {showGuide && (
-          <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-6 animate-in zoom-in-95 duration-200">
+          <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-6 animate-in zoom-in-95 duration-200">
             <h3 className="text-2xl font-bold text-slate-800 mb-6">Hướng dẫn thao tác</h3>
             <ul className="text-left space-y-5 max-w-md text-slate-600 font-medium text-sm md:text-base">
               <li className="flex gap-3 items-start">
@@ -205,7 +230,7 @@ export default function Timer() {
               <li className="flex gap-3 items-start">
                 <span className="text-xl">📱</span>
                 <span>
-                  <b>Điện thoại:</b> Chạm giữ màn hình để chuẩn bị, thả tay để bắt đầu. Chạm lần nữa để dừng. Chạm thêm 1 lần để xóa thời gian.
+                  <b>Điện thoại:</b> Chạm giữ vào <b>khu vực trung tâm</b> (quanh số đồng hồ) để chuẩn bị, thả tay để bắt đầu. Chạm vào đó lần nữa để dừng hoặc xóa kết quả.
                 </span>
               </li>
             </ul>
