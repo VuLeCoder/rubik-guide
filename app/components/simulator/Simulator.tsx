@@ -154,12 +154,13 @@ export default function Simulator() {
   // Stable callback for pointer down
   const onPointerDown = useCallback((e: any) => {
     e.stopPropagation();
-    if (activeMoveRef.current || isTransitioning.current || moveQueue.current.length >= MAX_QUEUE) return;
     if (!e.object) return;
 
     if (controlsRef.current) {
       controlsRef.current.enabled = false;
     }
+
+    if (moveQueue.current.length >= MAX_QUEUE) return;
 
     const worldNormal = e.object.position.clone().normalize().round();
 
