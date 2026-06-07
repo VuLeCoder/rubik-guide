@@ -1,5 +1,6 @@
 
 export const ABOUT_ME_CONTENT = {
+  ava_img: "file.svg",
   name: "Name",
   title: "Title",
   socialLinks: [

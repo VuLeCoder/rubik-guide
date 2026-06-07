@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { User, Mail, Code, Globe, BookOpen, Quote, Trophy } from 'lucide-react';
+import Image from 'next/image';
+import { Mail, Code, Globe, BookOpen, Quote, Trophy } from 'lucide-react';
 import { ABOUT_ME_CONTENT } from './constants';
 
 const IconMap = {
@@ -11,7 +11,7 @@ const IconMap = {
 };
 
 export default function AboutMe() {
-  const { name, title, socialLinks, bio, personalBest, story } = ABOUT_ME_CONTENT;
+  const { ava_img, name, title, socialLinks, bio, personalBest, story } = ABOUT_ME_CONTENT;
 
   return (
     <div className="max-w-4xl mx-auto py-8 space-y-12">
@@ -21,9 +21,13 @@ export default function AboutMe() {
         <div className="px-6 pb-8">
           <div className="relative flex justify-center -mt-16 mb-6">
             <div className="p-1 bg-white rounded-full shadow-lg">
-              <div className="w-32 h-32 rounded-full bg-slate-200 border-4 border-white flex items-center justify-center overflow-hidden">
-                <User size={64} className="text-slate-400" />
-                {/* <img src="/path-to-your-photo.jpg" alt={name} className="w-full h-full object-cover" /> */}
+              <div className="relative w-32 h-32 rounded-full bg-slate-200 border-4 border-white flex items-center justify-center overflow-hidden">
+                <Image 
+                  src={`/about-me/${ava_img}`}
+                  alt={name} 
+                  fill
+                  className="object-cover"
+                />
               </div>
             </div>
           </div>
