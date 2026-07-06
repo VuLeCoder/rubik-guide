@@ -126,15 +126,13 @@ export default function AboutMe() {
           Video giới thiệu
         </h2>
         <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg bg-slate-100 border border-slate-200">
-          <video
-            className="w-full h-full object-contain"
+          <iframe
+            className="absolute top-0 left-0 w-full h-full"
             src={videoLink}
-            controls
-            preload="metadata"
-            playsInline
-          >
-            Trình duyệt của bạn không hỗ trợ phát video trực tiếp.
-          </video>
+            title="Video giới thiệu"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
         </div>
       </section>
 
