@@ -1,5 +1,6 @@
 "use client";
 
+import { Analytics } from "@vercel/analytics/next"
 import React, { useState } from 'react';
 import Image from 'next/image';
 import rubikLogo from '@/public/logo_rubik.jpg';
@@ -112,6 +113,7 @@ export default function Home() {
       <footer className="text-center py-8 md:py-10 border-t border-slate-300 text-slate-600 text-[10px] md:text-xs font-medium px-4">
         © 2026 RubikCommunity • Connecting Cubes, Building Community
       </footer>
+      <Analytics />
     </div>
   );
 }
