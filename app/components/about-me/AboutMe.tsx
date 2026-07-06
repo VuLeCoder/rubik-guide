@@ -1,20 +1,21 @@
 "use client";
 
 import Image from 'next/image';
-import { Mail, Code, Globe, BookOpen, Quote, Trophy } from 'lucide-react';
+import { Mail, Globe, BookOpen, Quote, Trophy, Phone, Video, Share2 } from 'lucide-react';
 import { ABOUT_ME_CONTENT } from './constants';
 
 const IconMap = {
-  Code,
+  Phone,
   Mail,
-  Globe,
+  Share2,
+  Video
 };
 
 export default function AboutMe() {
-  const { ava_img, name, title, socialLinks, bio, personalBest, story } = ABOUT_ME_CONTENT;
+  const { ava_img, name, title, socialLinks, bio, personalBest, story, videoLink } = ABOUT_ME_CONTENT;
 
   return (
-    <div className="max-w-4xl mx-auto py-8 space-y-12">
+    <div className="max-w-4xl mx-auto py-8 space-y-12 px-4 sm:px-6">
       {/* Profile Header */}
       <section className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
         <div className="h-32 bg-amber-400"></div>
@@ -38,13 +39,22 @@ export default function AboutMe() {
             <div className="flex justify-center gap-4 pt-4">
               {socialLinks.map((link) => {
                 const Icon = IconMap[link.icon as keyof typeof IconMap] || Globe;
+
+                let formattedHref = link.url;
+                if (link.icon === "Phone") {
+                  formattedHref = `tel:${link.url}`;
+                } else if (link.icon === "Mail" && !link.url.startsWith("mailto:")) {
+                  formattedHref = `mailto:${link.url}`;
+                }
+
                 return (
                   <a 
                     key={link.id}
-                    href={link.url} 
+                    href={formattedHref} 
                     className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-amber-100 hover:text-amber-600 transition-colors"
                     target="_blank"
                     rel="noopener noreferrer"
+                    title={link.icon === "Phone" ? `Gọi: ${link.url}` : link.icon === "Mail" ? `Gửi mail: ${link.url}` : link.id}
                   >
                     <Icon size={20} />
                   </a>
@@ -55,8 +65,12 @@ export default function AboutMe() {
         </div>
       </section>
 
-      <div className="grid md:grid-cols-3 gap-8">
-        <div className="md:col-span-1 space-y-8">
+      {/* Main Content Layout (Grid 2 cột ở phía trên) */}
+      <div className="grid md:grid-cols-3 gap-8 items-start">
+        
+        {/* Left Column: Sidebar (Chỉ còn Tiểu sử và Kỷ lục) */}
+        <div className="md:col-span-1 space-y-6 md:sticky md:top-16">
+          
           {/* Short Bio */}
           <section className="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
             <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-4">
@@ -65,9 +79,9 @@ export default function AboutMe() {
             </h2>
             <ul className="space-y-4 text-slate-600 text-sm">
               {bio.map((item, idx) => (
-                <li key={idx} className="flex gap-3 border-b border-slate-50 pb-2 last:border-0">
-                  <span className="font-bold text-slate-900 min-w-[80px]">{item.label}:</span>
-                  <span>{item.value}</span>
+                <li key={idx} className="flex flex-col gap-1 border-b border-slate-50 pb-2 last:border-0 last:pb-0">
+                  <span className="font-bold text-slate-900">{item.label}:</span>
+                  <span className="leading-relaxed">{item.value}</span>
                 </li>
               ))}
             </ul>
@@ -81,30 +95,49 @@ export default function AboutMe() {
             </h2>
             <ul className="space-y-4 text-slate-600 text-sm">
               {personalBest.map((item, idx) => (
-                <li key={idx} className="flex justify-between items-center border-b border-slate-50 pb-2 last:border-0">
+                <li key={idx} className="flex justify-between items-center border-b border-slate-50 pb-2 last:border-0 last:pb-0">
                   <span className="font-semibold text-slate-900">{item.label}</span>
-                  <span className="text-emerald-600 font-bold">{item.value}</span>
+                  <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">{item.value}</span>
                 </li>
               ))}
             </ul>
           </section>
         </div>
 
-        {/* Story */}
-        <section className="md:col-span-2">
-          <div className="bg-white p-8 rounded-2xl shadow-md border border-slate-200 relative h-full">
-            <Quote size={48} className="absolute top-4 right-4 text-slate-100" />
+        {/* Right Column: Long Story */}
+        <section className="md:col-span-2 h-full">
+          <div className="bg-white p-8 rounded-2xl shadow-md border border-slate-200 relative min-h-full">
+            <Quote size={48} className="absolute top-4 right-4 text-slate-100 pointer-events-none" />
             <h2 className="text-2xl font-bold text-slate-900 mb-6 border-b-2 border-amber-400 inline-block pb-1">
               Câu chuyện của mình
             </h2>
-            <div className="prose prose-slate max-w-none text-slate-600 space-y-4 leading-relaxed">
+            <div className="prose prose-slate max-w-none text-slate-600 space-y-5 leading-relaxed text-sm sm:text-base">
               {story.map((para, idx) => (
-                <p key={idx}>{para}</p>
+                <p key={idx} className="text-justify">{para}</p>
               ))}
             </div>
           </div>
         </section>
       </div>
+
+      <section className="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200">
+        <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 mb-6">
+          <Video size={24} className="text-amber-500" />
+          Video giới thiệu
+        </h2>
+        <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg bg-slate-100 border border-slate-200">
+          <video
+            className="w-full h-full object-contain"
+            src={videoLink}
+            controls
+            preload="metadata"
+            playsInline
+          >
+            Trình duyệt của bạn không hỗ trợ phát video trực tiếp.
+          </video>
+        </div>
+      </section>
+
     </div>
   );
 }
