@@ -6,7 +6,7 @@ export const ABOUT_ME_CONTENT = {
   socialLinks: [
     { id: "phone", url: "0899509889", icon: "Phone" },
     { id: "email", url: "khanhcaoq2@gmail.com", icon: "Mail" },
-    { id: "website", url: "https://www.facebook.com/share/v/1BcCwd2G6e/?mibextid=wwXIfr", icon: "Globe" },
+    { id: "website", url: "https://www.facebook.com/share/v/1KzohHcA6o/", icon: "Globe" },
     { id: "youtube", url: "https://www.youtube.com/watch?si=FzAeLyiAnkCfwfMY&v=G4Zz75ProNY&feature=youtu.be", icon: "Video" },
   ],
   bio: [
