@@ -1,10 +1,12 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Fingerprint } from 'lucide-react';
+import { useLanguage } from '@/app/context/LanguageContext';
 
 type TimerState = 'idle' | 'ready' | 'running' | 'stopped';
 
 export default function Timer() {
+  const { t } = useLanguage();
   const [time, setTime] = useState(0);
   const [timerState, setTimerState] = useState<TimerState>('idle');
   const [showGuide, setShowGuide] = useState(false);
@@ -189,7 +191,7 @@ export default function Timer() {
         <button 
           onClick={() => toggleGuide(true)}
           className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-full font-extrabold text-lg transition-colors z-20"
-          title="Hướng dẫn sử dụng"
+          title={t.timer.guideTitle}
         >
           ?
         </button>
@@ -200,15 +202,15 @@ export default function Timer() {
           onTouchStart={(e) => handleDown(e)}
           onTouchEnd={(e) => handleUp(e)}
         >
-          <h2 className="text-xl text-slate-500 mb-6 uppercase tracking-widest font-extrabold pointer-events-none">Rubik Timer</h2>
+          <h2 className="text-xl text-slate-500 mb-6 uppercase tracking-widest font-extrabold pointer-events-none">{t.timer.title}</h2>
           
           <div className={`text-7xl md:text-9xl font-mono mb-6 font-bold transition-all duration-200 pointer-events-none ${timerColorClass}`}>
             {formatTime(time)}
           </div>
 
           <p className="text-slate-400 font-medium h-6 text-sm md:text-base animate-in fade-in pointer-events-none text-center">
-            {timerState === 'stopped' ? 'Nhấn Space / Chạm để xóa kết quả' : 
-             timerState === 'idle' ? 'Nhấn Space / Chạm giữ để chuẩn bị' : ''}
+            {timerState === 'stopped' ? t.timer.stoppedHint : 
+             timerState === 'idle' ? t.timer.idleHint : ''}
           </p>
 
           {/* Visual Hint for Mobile */}
@@ -219,18 +221,18 @@ export default function Timer() {
 
         {showGuide && (
           <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-6 animate-in zoom-in-95 duration-200">
-            <h3 className="text-2xl font-bold text-slate-800 mb-6">Hướng dẫn thao tác</h3>
+            <h3 className="text-2xl font-bold text-slate-800 mb-6">{t.timer.guideTitle}</h3>
             <ul className="text-left space-y-5 max-w-md text-slate-600 font-medium text-sm md:text-base">
               <li className="flex gap-3 items-start">
                 <span className="text-xl">💻</span>
                 <span>
-                  <b>Máy tính:</b> Giữ phím <kbd className="bg-slate-200 border border-slate-300 px-2 py-0.5 rounded text-slate-800 font-mono shadow-sm mx-1">Space</kbd> để chuẩn bị, thả ra để bắt đầu. Nhấn lần nữa để dừng. Nhấn thêm 1 lần để xóa thời gian.
+                  <b>{t.timer.guideComputer}</b> {t.timer.guideComputerDesc}
                 </span>
               </li>
               <li className="flex gap-3 items-start">
                 <span className="text-xl">📱</span>
                 <span>
-                  <b>Điện thoại:</b> Chạm giữ vào <b>khu vực trung tâm</b> (quanh số đồng hồ) để chuẩn bị, thả tay để bắt đầu. Chạm vào đó lần nữa để dừng hoặc xóa kết quả.
+                  <b>{t.timer.guidePhone}</b> {t.timer.guidePhoneDesc}
                 </span>
               </li>
             </ul>
@@ -238,7 +240,7 @@ export default function Timer() {
               onClick={() => toggleGuide(false)}
               className="mt-10 px-8 py-3 bg-slate-800 text-white font-bold rounded-xl shadow-lg hover:bg-slate-700 transition-transform active:scale-95"
             >
-              Đã hiểu
+              {t.timer.understood}
             </button>
           </div>
         )}
@@ -246,18 +248,18 @@ export default function Timer() {
 
       <div className="lg:col-span-1 flex flex-col gap-6">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-          <h3 className="text-sm font-bold text-black uppercase tracking-wider mb-4">Thống kê</h3>
+          <h3 className="text-sm font-bold text-black uppercase tracking-wider mb-4">{t.timer.statistics}</h3>
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-4">
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <div className="text-xs text-black font-semibold mb-1">Tốt nhất</div>
+              <div className="text-xs text-black font-semibold mb-1">{t.timer.best}</div>
               <div className="text-xl font-mono font-bold text-emerald-600">{stats.best > 0 ? formatTime(stats.best) : '--'}</div>
             </div>
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <div className="text-xs text-black font-semibold mb-1">Trung bình (Ao5)</div>
+              <div className="text-xs text-black font-semibold mb-1">{t.timer.ao5}</div>
               <div className="text-xl font-mono font-bold text-blue-600">{stats.ao5 > 0 ? formatTime(stats.ao5) : '--'}</div>
             </div>
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <div className="text-xs text-black font-semibold mb-1">Trung bình tổng</div>
+              <div className="text-xs text-black font-semibold mb-1">{t.timer.mean}</div>
               <div className="text-xl font-mono font-bold text-black">{stats.mean > 0 ? formatTime(stats.mean) : '--'}</div>
             </div>
           </div>
@@ -265,13 +267,13 @@ export default function Timer() {
 
         <div className="bg-white rounded-2xl flex-1 shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[200px]">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-            <h3 className="text-sm font-bold text-black uppercase tracking-wider">Lịch sử ({history.length})</h3>
+            <h3 className="text-sm font-bold text-black uppercase tracking-wider">{t.timer.history} ({history.length})</h3>
             {history.length > 0 && (
               <button 
                 onClick={() => toggleClearConfirm(true)}
                 className="text-xs font-bold text-red-400 hover:text-red-600 transition-colors"
               >
-                Xóa hết
+                {t.timer.clearAll}
               </button>
             )}
           </div>
@@ -279,36 +281,36 @@ export default function Timer() {
           <div className="flex-1 overflow-y-auto max-h-[168px] relative">
             {showClearConfirm && (
               <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-4 text-center animate-in fade-in zoom-in-95 duration-200">
-                <p className="text-sm font-bold text-slate-800 mb-4">Xóa toàn bộ lịch sử?</p>
+                <p className="text-sm font-bold text-slate-800 mb-4">{t.timer.clearConfirm}</p>
                 <div className="flex gap-3">
                   <button 
                     onClick={clearHistory}
                     className="px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 transition-colors"
                   >
-                    Xóa
+                    {t.timer.deleteBtn}
                   </button>
                   <button 
                     onClick={() => toggleClearConfirm(false)}
                     className="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-300 transition-colors"
                   >
-                    Hủy
+                    {t.timer.cancelBtn}
                   </button>
                 </div>
               </div>
             )}
             {history.length === 0 ? (
               <div className="h-full flex items-center justify-center p-8 text-slate-300 text-sm italic text-center">
-                Chưa có dữ liệu giải đố
+                {t.timer.noData}
               </div>
             ) : (
               <div className="divide-y divide-slate-50">
-                {history.map((t, i) => (
-                  <div key={`${i}-${t}`} className="group flex items-center justify-between p-3 hover:bg-slate-50 transition-colors">
+                {history.map((tVal, i) => (
+                  <div key={`${i}-${tVal}`} className="group flex items-center justify-between p-3 hover:bg-slate-50 transition-colors">
                     <div className="flex items-center gap-3">
                       <span className="text-[10px] font-mono text-slate-300 w-4">{history.length - i}</span>
                       <span className="font-mono font-bold text-slate-900">
-                        {formatTime(t)}
-                        {t === stats.best && history.length > 1 && (
+                        {formatTime(tVal)}
+                        {tVal === stats.best && history.length > 1 && (
                           <span className="ml-2 text-[10px] text-emerald-500 font-bold uppercase tracking-tighter">Best</span>
                         )}
                       </span>
@@ -316,7 +318,7 @@ export default function Timer() {
                     <button 
                       onClick={() => deleteSolve(i)}
                       className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-300 hover:text-red-500 transition-all"
-                      title="Xóa lần này"
+                      title={t.timer.deleteThis}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -332,3 +334,4 @@ export default function Timer() {
     </div>
   );
 }
+

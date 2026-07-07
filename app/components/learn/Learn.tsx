@@ -9,6 +9,7 @@ import { Pagination, EffectFade } from "swiper/modules";
 import { STEPS } from "./constants";
 import { ProgressBar } from "./ProgressBar";
 import { StaticCube } from "../simulator/StaticCube";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 import {
   Play,
@@ -25,6 +26,38 @@ import "swiper/css/pagination";
 import "swiper/css/effect-fade";
 
 export default function Learn() {
+  const { language, t } = useLanguage();
+
+  // Merge static metadata from STEPS constants with current language translations
+  const translatedSteps = React.useMemo(() => {
+    return t.learn.steps.map((translatedStep, sIdx) => {
+      const staticStep = STEPS[sIdx];
+      return {
+        ...staticStep,
+        title: translatedStep.title,
+        subSteps: translatedStep.subSteps.map((translatedSubStep, ssIdx) => {
+          const staticSubStep = staticStep.subSteps[ssIdx];
+          const tSub = translatedSubStep as any;
+          return {
+            ...staticSubStep,
+            title: translatedSubStep.title,
+            content: translatedSubStep.content,
+            cases: staticSubStep.cases && tSub.cases
+              ? staticSubStep.cases.map((staticCase, cIdx) => {
+                  const translatedCase = tSub.cases[cIdx];
+                  return {
+                    ...staticCase,
+                    title: translatedCase.title,
+                    content: translatedCase.content,
+                  };
+                })
+              : undefined,
+          };
+        }),
+      };
+    });
+  }, [t.learn.steps]);
+
   const [activeStepIdx, setActiveStepIdx] = useState(0);
   const [activeSubStepIdx, setActiveSubStepIdx] = useState(0);
 
@@ -45,7 +78,7 @@ export default function Learn() {
   // FIX: ref riêng cho từng step-substep
   const caseSwiperRefs = useRef<Record<string, any>>({});
 
-  const activeStep = STEPS[activeStepIdx];
+  const activeStep = translatedSteps[activeStepIdx];
   const activeSubStep = activeStep.subSteps[activeSubStepIdx];
 
   // FIX: current case theo đúng step-substep
@@ -73,6 +106,25 @@ export default function Learn() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Sync swiper height on changes to step, substep, case index, or language
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (mainSwiperRef.current) {
+        mainSwiperRef.current.updateAutoHeight(100);
+      }
+      const activeSubSwiper = subSwiperRefs.current[activeStepIdx];
+      if (activeSubSwiper) {
+        activeSubSwiper.updateAutoHeight(100);
+      }
+      const caseKey = `${activeStepIdx}-${activeSubStepIdx}`;
+      const activeCaseSwiper = caseSwiperRefs.current[caseKey];
+      if (activeCaseSwiper) {
+        activeCaseSwiper.updateAutoHeight(100);
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [activeStepIdx, activeSubStepIdx, activeCaseIndexes, language]);
+
   const hasAnimation =
     (activeStep.id === 1 && activeSubStepIdx === 1) ||
     !!activeSubStep.cases;
@@ -85,7 +137,7 @@ export default function Learn() {
       activeSubStepIdx < activeStep.subSteps.length - 1
     ) {
       currentSubSwiper.slideNext();
-    } else if (activeStepIdx < STEPS.length - 1) {
+    } else if (activeStepIdx < translatedSteps.length - 1) {
       mainSwiperRef.current?.slideNext();
     }
   };
@@ -141,13 +193,13 @@ export default function Learn() {
               <span
                 className={`px-3 py-0.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider ${activeStep.color}`}
               >
-                Bước {activeStep.id}
+                {t.learn.stepLabel} {activeStep.id}
               </span>
 
               <div className="flex-1">
                 <ProgressBar
                   currentStep={activeStepIdx}
-                  totalSteps={STEPS.length}
+                  totalSteps={translatedSteps.length}
                 />
               </div>
             </div>
@@ -174,18 +226,18 @@ export default function Learn() {
             </button>
 
             <div className="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-black min-w-[70px] text-center shadow-lg">
-              {activeStepIdx + 1} / {STEPS.length}
+              {activeStepIdx + 1} / {translatedSteps.length}
             </div>
 
             <button
               onClick={handleNext}
               disabled={
-                activeStepIdx === STEPS.length - 1 &&
+                activeStepIdx === translatedSteps.length - 1 &&
                 activeSubStepIdx ===
                   activeStep.subSteps.length - 1
               }
               className={`p-2.5 rounded-xl transition-all ${
-                activeStepIdx === STEPS.length - 1 &&
+                activeStepIdx === translatedSteps.length - 1 &&
                 activeSubStepIdx ===
                   activeStep.subSteps.length - 1
                   ? "bg-slate-100 text-slate-300"
@@ -221,7 +273,7 @@ export default function Learn() {
             }}
             className="w-full"
           >
-            {STEPS.map((step, stepIdx) => (
+            {translatedSteps.map((step, stepIdx) => (
               <SwiperSlide
                 key={stepIdx}
                 className={
@@ -265,7 +317,7 @@ export default function Learn() {
                             <div className="mb-3">
                               <div className="flex items-center gap-2 mb-4">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                  Phần {subIdx + 1} /{" "}
+                                  {t.learn.partLabel} {subIdx + 1} /{" "}
                                   {step.subSteps.length}
                                 </span>
 
@@ -334,6 +386,7 @@ export default function Learn() {
                                         el: `.case-pagination-${caseKey}`,
                                       }}
                                       nested
+                                      autoHeight
                                       touchStartPreventDefault={
                                         false
                                       }
@@ -420,7 +473,7 @@ export default function Learn() {
                                       <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/5 rounded-full -mr-16 -mt-16 transition-transform group-hover/formula:scale-150 duration-700" />
 
                                       <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] block mb-4">
-                                        Công thức tối ưu
+                                        {t.learn.formulaLabel}
                                       </span>
 
                                       <div className="flex flex-wrap gap-2 md:gap-3">
@@ -500,7 +553,7 @@ export default function Learn() {
                 />
 
                 <span className="text-[10px] font-black text-white/80 uppercase tracking-widest">
-                  Tương tác 3D
+                  {t.learn.interaction3D}
                 </span>
               </div>
 

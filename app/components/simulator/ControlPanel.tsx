@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { useLanguage } from '@/app/context/LanguageContext';
 
 interface ControlPanelProps {
   onMove: (move: string) => void;
@@ -11,6 +12,7 @@ export const ControlPanel = memo(function ControlPanel({
   onReset,
   disabled = false
 }: ControlPanelProps) {
+  const { t } = useLanguage();
   const faceMoves = ["U", "U'", "D", "D'", "L", "L'", "R", "R'", "F", "F'", "B", "B'"];
   const sliceMoves = ["M", "M'", "E", "E'", "S", "S'"];
 
@@ -30,7 +32,7 @@ export const ControlPanel = memo(function ControlPanel({
     <div className="col-span-12 lg:col-span-4 bg-[#1f2a44] rounded-[32px] p-6 border border-slate-200 shadow-sm">
       <div className="mb-6">
         <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">
-          Face Moves
+          {t.simulator.faceMoves}
         </p>
 
         <div className="grid grid-cols-4 gap-1.5">
@@ -56,7 +58,7 @@ export const ControlPanel = memo(function ControlPanel({
 
       <div>
         <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">
-          Slices
+          {t.simulator.slices}
         </p>
 
         <div className="grid grid-cols-3 gap-1.5">
@@ -84,8 +86,9 @@ export const ControlPanel = memo(function ControlPanel({
         onClick={onReset}
         className="lg:hidden mt-6 w-full bg-slate-800 text-red-500 py-3 rounded-xl text-[14px] font-black uppercase tracking-widest border border-slate-200"
       >
-        Reset Cube
+        {t.simulator.resetCubeBtn}
       </button>
     </div>
   );
 });
+

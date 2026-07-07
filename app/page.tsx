@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import rubikLogo from '@/public/logo_rubik.jpg';
 import { Menu, X, Box, BookOpen, Timer as TimerIcon, User } from 'lucide-react';
+import { LanguageProvider, useLanguage } from '@/app/context/LanguageContext';
 
 import dynamic from 'next/dynamic';
 
@@ -19,15 +20,16 @@ const Learn = dynamic(() => import('./components/learn/Learn'), {
 const Timer = dynamic(() => import('./components/Timer'), { ssr: false });
 const AboutMe = dynamic(() => import('./components/about-me/AboutMe'), { ssr: false });
 
-export default function Home() {
+function MainApp() {
   const [activeTab, setActiveTab] = useState('about');
   const [isOpen, setIsOpen] = useState(false);
+  const { language, setLanguage, t } = useLanguage();
 
   const navItems = [
-    { id: 'simulator', name: 'Simulator', icon: <Box size={18} /> },
-    { id: 'learn', name: 'Learn', icon: <BookOpen size={18} /> },
-    { id: 'timer', name: 'Timer', icon: <TimerIcon size={18} /> },
-    { id: 'about', name: 'About Me', icon: <User size={18} /> },
+    { id: 'simulator', name: t.nav.simulator, icon: <Box size={18} /> },
+    { id: 'learn', name: t.nav.learn, icon: <BookOpen size={18} /> },
+    { id: 'timer', name: t.nav.timer, icon: <TimerIcon size={18} /> },
+    { id: 'about', name: t.nav.about, icon: <User size={18} /> },
   ];
 
   return (
@@ -48,8 +50,8 @@ export default function Home() {
             </div>
 
             {/* Desktop Menu */}
-            <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4">
+            <div className="hidden md:flex items-center space-x-6">
+              <div className="flex items-baseline space-x-4">
                 {navItems.map((item) => (
                   <button
                     key={item.id}
@@ -64,6 +66,30 @@ export default function Home() {
                     {item.name}
                   </button>
                 ))}
+              </div>
+
+              {/* Language Switcher */}
+              <div className="flex items-center border border-slate-300 rounded-lg p-0.5 bg-slate-100">
+                <button
+                  onClick={() => setLanguage('vi')}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+                    language === 'vi' 
+                      ? 'bg-white text-slate-950 shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-950'
+                  }`}
+                >
+                  VI
+                </button>
+                <button
+                  onClick={() => setLanguage('en')}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+                    language === 'en' 
+                      ? 'bg-white text-slate-950 shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-950'
+                  }`}
+                >
+                  EN
+                </button>
               </div>
             </div>
 
@@ -81,7 +107,7 @@ export default function Home() {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden bg-[#FFFBF0] border-b border-slate-300 px-2 pt-2 pb-3 space-y-1 shadow-lg">
+          <div className="md:hidden bg-[#FFFBF0] border-b border-slate-300 px-2 pt-2 pb-4 space-y-1 shadow-lg">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -97,6 +123,33 @@ export default function Home() {
                 {item.name}
               </button>
             ))}
+
+            {/* Mobile Language Switcher */}
+            <div className="flex items-center justify-between px-3 py-4 border-t border-slate-200 mt-2">
+              <span className="text-sm font-bold text-slate-600">{t.nav.language}</span>
+              <div className="flex items-center border border-slate-300 rounded-lg p-0.5 bg-slate-100">
+                <button
+                  onClick={() => setLanguage('vi')}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                    language === 'vi' 
+                      ? 'bg-white text-slate-950 shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-950'
+                  }`}
+                >
+                  Tiếng Việt
+                </button>
+                <button
+                  onClick={() => setLanguage('en')}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                    language === 'en' 
+                      ? 'bg-white text-slate-950 shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-950'
+                  }`}
+                >
+                  English
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </nav>
@@ -111,9 +164,18 @@ export default function Home() {
       </main>
 
       <footer className="text-center py-8 md:py-10 border-t border-slate-300 text-slate-600 text-[10px] md:text-xs font-medium px-4">
-        © 2026 RubikCommunity • Connecting Cubes, Building Community
+        {t.footer}
       </footer>
       <Analytics />
     </div>
   );
 }
+
+export default function Home() {
+  return (
+    <LanguageProvider>
+      <MainApp />
+    </LanguageProvider>
+  );
+}
+
