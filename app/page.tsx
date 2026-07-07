@@ -20,7 +20,7 @@ const Timer = dynamic(() => import('./components/Timer'), { ssr: false });
 const AboutMe = dynamic(() => import('./components/about-me/AboutMe'), { ssr: false });
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('simulator');
+  const [activeTab, setActiveTab] = useState('about');
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
