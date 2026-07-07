@@ -41,3 +41,17 @@ body {
     background: #cbd5e1;
   }
 }
+
+/* Custom cursor for interactive elements */
+button,
+[role="button"],
+a,
+select {
+  cursor: pointer;
+}
+
+button:disabled,
+button[disabled],
+[role="button"][disabled] {
+  cursor: not-allowed;
+}
