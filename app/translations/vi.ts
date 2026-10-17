@@ -17,7 +17,7 @@ export const vi = {
     myStory: "Câu chuyện của mình",
     introVideo: "Video giới thiệu",
     bioLabels: {
-      location: "Vị trí",
+      location: "Nơi sống",
       chess: "Cờ vua",
       robotics: "Robotics",
       highlights: "Hoạt động nổi bật"
@@ -30,45 +30,45 @@ export const vi = {
     },
     story: [
       "Đầu năm 2020, khi đại dịch COVID-19 bùng phát, cuộc sống gần như chững lại. Trường học đóng cửa, các bạn nhỏ phải ở nhà và những con đường vốn nhộn nhịp bỗng trở nên vắng lặng. Trong khoảng thời gian đặc biệt ấy, em bắt đầu hành trình của mình với một khối Rubik.",
-      "Ban đầu, em chỉ muốn tìm một hoạt động để giết thời gian. Em lên mạng học cách giải Rubik 3x3x3 và say mê niềm vui khi xoay những mảnh ghép xáo trộn thành sáu mặt đồng màu. Sau đó, em thử sức với những khối Rubik phức tạp hơn, trong đó có khối 10x10x10. Khi gần như không có hướng dẫn nào, em đã dành hai ngày tự mày mò qua vô số lần thử. Chính lúc ấy, em nhận ra giải Rubik không chỉ là một trò chơi mà còn giúp rèn luyện tính kiên nhẫn và sự bền bỉ.",
+      "Ban đầu, em chỉ muốn tìm một hoạt động để giết thời gian. Em lên mạng học cách giải Rubik 3x3x3 và thích thú khi xoay những mảnh ghép xáo trộn thành sáu mặt đồng màu. Sau đó, em thử sức với những khối Rubik phức tạp hơn, trong đó có khối 10x10x10. Khi gần như không có hướng dẫn nào, em đã dành hai ngày tự mày mò qua vô số lần thử. Chính lúc ấy, em nhận ra giải Rubik không chỉ là một trò chơi mà còn giúp rèn luyện tính kiên nhẫn và sự bền bỉ.",
       "Trong thời gian dịch bệnh, em nhận thấy nhiều bạn nhỏ cũng phải ở nhà và có ít cơ hội tham gia những hoạt động ý nghĩa. Em tự hỏi: “Nếu Rubik đã mang đến cho mình niềm vui và sự say mê như vậy, tại sao mình không chia sẻ điều đó với các bạn?”",
       "Em bắt đầu dạy Rubik cả trực tuyến lẫn trực tiếp. Từ mười học viên đầu tiên, các lớp học dần mở rộng đến hàng trăm bạn nhỏ trên khắp Việt Nam. Điều khiến em hạnh phúc nhất không phải là số học viên ngày càng đông, mà là những thay đổi em thấy ở các bạn. Nhiều phụ huynh nhắn tin cảm ơn vì con mình không còn quá mải mê với điện thoại, có một mùa hè ý nghĩa hơn và hào hứng học điều mới mỗi ngày. Một số bạn còn đạt thành tích ấn tượng trong các cuộc thi ở trường, trong đó có một bạn giành huy chương vàng.",
       "Những thay đổi ấy thôi thúc em hướng sự quan tâm đến các bạn nhỏ có ít cơ hội hơn, đặc biệt là trẻ mồ côi. Cùng những người bạn chung chí hướng, em thành lập một nhóm thiện nguyện với mục tiêu ban đầu là trao tặng Rubik và hướng dẫn miễn phí cho trẻ em tại cả 17 Làng Trẻ em SOS trên khắp Việt Nam.",
       "Sau khi hoàn thành mục tiêu ấy, chúng em tiếp tục đến các mái ấm, trung tâm bảo trợ xã hội và những ngôi trường vùng sâu, vùng xa. Mỗi chuyến đi đều mang đến những nụ cười và ánh mắt háo hức khi các em khám phá niềm vui giải khối Rubik đầu tiên. Đến nay, hành trình đã đưa chúng em đi qua 51 tỉnh, thành trên khắp Việt Nam. Chúng em đã trao tặng hàng nghìn khối Rubik và dạy hàng nghìn bạn nhỏ giải Rubik hoàn toàn miễn phí.",
       "Ngoài việc dạy các công thức, em mong mang đến cho các bạn nhỏ thêm cơ hội khám phá, thử sức và cảm nhận niềm vui khi vượt qua khó khăn. Nhìn các bạn ngày càng tự tin, em lại nhớ vì sao mình bắt đầu hành trình này và có thêm động lực chia sẻ niềm đam mê của mình.",
       "Nhìn lại, em nhận ra thành tựu lớn nhất của mình không phải là giải được những khối Rubik phức tạp nhất, mà là dùng một khối Rubik nhỏ bé để kết nối mọi người, truyền cảm hứng cho các bạn nhỏ và mang niềm vui đến những cộng đồng cần điều đó nhất.",
-      "Vì vậy, em sẽ tiếp tục hành trình này, tiếp tục tổ chức những lớp học Rubik trực tuyến và trực tiếp, tiếp tục mang những khối Rubik đến với nhiều vùng đất hơn, để ngày càng nhiều bạn nhỏ trên khắp Việt Nam được nuôi dưỡng sự tò mò, lòng kiên trì và niềm tin rằng: chỉ cần không bỏ cuộc, dù mọi thứ có rối đến đâu, cũng sẽ luôn có cách để tìm ra lời giải."
+      "Vì vậy, em sẽ tiếp tục hành trình này, tiếp tục tổ chức những lớp học Rubik trực tuyến và trực tiếp, tiếp tục mang những khối Rubik đến với nhiều vùng đất hơn, để ngày càng nhiều bạn nhỏ trên khắp Việt Nam được nuôi dưỡng sự tò mò, lòng kiên trì và niềm tin rằng chỉ cần không bỏ cuộc, dù mọi thứ có rối đến đâu, cũng sẽ luôn có cách để tìm ra lời giải."
     ]
   },
   timer: {
-    title: "Rubik Timer",
+    title: "Đồng hồ bấm giờ Rubik",
     guideTitle: "Hướng dẫn thao tác",
     guideComputer: "Máy tính:",
-    guideComputerDesc: "Giữ phím Space để chuẩn bị, thả ra để bắt đầu. Nhấn lần nữa để dừng. Nhấn thêm 1 lần để xóa thời gian.",
+    guideComputerDesc: "Giữ phím Space để chuẩn bị, thả ra để bắt đầu. Nhấn lần nữa để dừng. Nhấn thêm một lần để xóa kết quả trên đồng hồ.",
     guidePhone: "Điện thoại:",
-    guidePhoneDesc: "Chạm giữ vào khu vực trung tâm (quanh số đồng hồ) để chuẩn bị, thả tay để bắt đầu. Chạm vào đó lần nữa để dừng hoặc xóa kết quả.",
+    guidePhoneDesc: "Chạm giữ vào khu vực trung tâm (quanh các chữ số trên đồng hồ) để chuẩn bị, thả tay để bắt đầu. Chạm vào đó lần nữa để dừng hoặc xóa kết quả.",
     understood: "Đã hiểu",
     statistics: "Thống kê",
     best: "Tốt nhất",
     ao5: "Trung bình (Ao5)",
-    mean: "Trung bình tổng",
+    mean: "Trung bình tất cả lượt giải",
     history: "Lịch sử",
     clearAll: "Xóa hết",
-    noData: "Chưa có dữ liệu giải đố",
+    noData: "Chưa có lượt giải nào",
     clearConfirm: "Xóa toàn bộ lịch sử?",
     deleteBtn: "Xóa",
     cancelBtn: "Hủy",
-    deleteThis: "Xóa lần này",
+    deleteThis: "Xóa lượt giải này",
     stoppedHint: "Nhấn Space / Chạm để xóa kết quả",
-    idleHint: "Nhấn Space / Chạm giữ để chuẩn bị"
+    idleHint: "Giữ Space / Chạm giữ để chuẩn bị"
   },
   simulator: {
     historyLog: "Lịch sử xoay",
     noMoves: "Chưa có lượt xoay",
     resetBtn: "Đặt lại",
-    resetCubeBtn: "Đặt lại khối",
+    resetCubeBtn: "Đặt lại khối Rubik",
     faceMoves: "Xoay các mặt",
-    slices: "Lớp giữa"
+    slices: "Xoay các lớp giữa"
   },
   learn: {
     stepLabel: "Bước",
@@ -76,7 +76,7 @@ export const vi = {
     roadmapTitle: "Lộ trình 6 bước",
     roadmapSubtitle: "Hướng dẫn cho người mới",
     partLabel: "Phần",
-    formulaLabel: "Công thức tối ưu",
+    formulaLabel: "Công thức",
     interaction3D: "Tương tác 3D",
     steps: [
       {
@@ -99,11 +99,11 @@ export const vi = {
         subSteps: [
           {
             title: "Hoàn thiện mặt trắng",
-            content: "Đưa các góc trắng về đúng vị trí. Hướng mặt trắng xuống dưới (đối diện mặt vàng). Tìm viên góc có màu trắng ở tầng 3 và đưa về phía trên vị trí nó cần xuống.",
+            content: "Đưa các góc trắng về đúng vị trí. Hướng mặt trắng xuống dưới (đối diện mặt vàng). Tìm viên góc có màu trắng ở tầng 3 và đưa đến ngay phía trên vị trí cần đặt.",
             cases: [
               {
                 id: 1,
-                title: "Trường hợp 1: Mặt trắng sang phải",
+                title: "Trường hợp 1: Mặt trắng hướng sang phải",
                 content: "Viên góc ở tầng 3, mặt trắng hướng sang bên phải."
               },
               {
@@ -153,7 +153,7 @@ export const vi = {
               {
                 id: 1,
                 title: "Trường hợp 1: Dấu chấm",
-                content: "Chỉ có duy nhất viên tâm màu vàng"
+                content: "Viên tâm có màu vàng, nhưng chưa có viên cạnh nào có màu vàng hướng lên trên. Bỏ qua các viên góc."
               },
               {
                 id: 2,
@@ -174,8 +174,8 @@ export const vi = {
         title: "B5: Mặt vàng",
         subSteps: [
           {
-            title: "Full mặt vàng",
-            content: "Chỉ cần dùng 1 công thức cho cả 7 trường hợp để lật toàn bộ các góc vàng lên trên. Lưu ý hướng đặt khối Rubik trước khi xoay sao cho các viên mặt vàng giống mô phỏng.",
+            title: "Hoàn thiện mặt vàng",
+            content: "Chỉ cần dùng 1 công thức cho cả 7 trường hợp để lật toàn bộ các góc vàng lên trên. Lưu ý hướng đặt khối Rubik trước khi xoay sao cho vị trí các ô màu vàng khớp với mô phỏng.",
             cases: [
               {
                 id: 1,
@@ -227,12 +227,12 @@ export const vi = {
               {
                 id: 1,
                 title: "Trường hợp 1:",
-                content: "2 viên góc đúng nằm liền kề nhau, ta để mặt đó sang bên tay trái và xoay công thức sau"
+                content: "Hai viên góc đúng vị trí nằm liền kề nhau. Đặt mặt chứa hai viên góc đó ở bên trái rồi thực hiện công thức sau:"
               },
               {
                 id: 2,
                 title: "Trường hợp 2:",
-                content: "2 viên góc đúng và nhưng nằm chéo góc. Ta chọn mặt có 1 cạnh đúng và 1 góc đúng rồi để mặt đó đối diện và xoay công thức sau để đưa về **trường hợp 1**"
+                content: "Hai viên góc đúng vị trí nằm chéo nhau. Chọn mặt có một viên cạnh và một viên góc đúng vị trí, hướng mặt đó về phía bạn rồi thực hiện công thức sau để đưa về **trường hợp 1**."
               }
             ]
           },
@@ -248,7 +248,7 @@ export const vi = {
               {
                 id: 2,
                 title: "Trường hợp 2",
-                content: "Có 1 mặt hoàn thiện (ví dụ: mặt Đỏ). Các cạnh còn lại cần chuyển theo chiều ngược chiều kim đồng hồ (Tâm Xanh dương có cạnh Xanh lá, tâm Cam có cạnh Xanh dương, tâm Xanh lá có cạnh Cam)."
+                content: "Có 1 mặt hoàn thiện (ví dụ: mặt Đỏ). Các cạnh còn lại cần chuyển ngược chiều kim đồng hồ (Tâm Xanh dương có cạnh Xanh lá, tâm Cam có cạnh Xanh dương, tâm Xanh lá có cạnh Cam)."
               },
               {
                 id: 3,

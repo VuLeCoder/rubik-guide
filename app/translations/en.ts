@@ -11,7 +11,7 @@ export const en = {
   },
   footer: "© 2026 RubikCommunity • Connecting Cubes, Building Community",
   aboutMe: {
-    title: "Young Rubik's Coach",
+    title: "Young Rubik's Cube Coach",
     biography: "Biography",
     personalBest: "Personal Best",
     myStory: "My Story",
@@ -32,17 +32,17 @@ export const en = {
       "At the beginning of 2020, when the COVID-19 pandemic broke out, life came to a near standstill. Schools shut down, kids were isolated at home, and busy streets fell quiet. During this extraordinary time, I started my journey with a Rubik’s cube.",
       "Initially, I was only looking for something to pass the time. I learned how to solve a 3x3x3 cube online, fascinated by the joy of turning scrambled pieces into six solid-colored faces. Later on, I challenged myself with more sophisticated puzzles, including a 10x10x10 cube. With almost no tutorials available, I spent two days figuring it out through countless attempts. This was the time I realized that solving the Rubik’s cube is not just a game; it teaches people patience and perseverance.",
       "During the pandemic, I realized that many children were also stuck at home, with limited opportunities for meaningful activities. I asked myself: 'If the Rubik's cube has brought me such joy and passion, why not share it with other kids?'",
-      "I started teaching Rubik’s classes both online and offline. Starting with just ten students, my classes gradually expanded to reach hundreds of children all over Vietnam. What made me happiest was not the growing popularity of my classes, but the changes I saw among my students. Many parents messaged me to express gratitude, saying their children were no longer hooked to their phones, had a more meaningful summer, and were motivated to learn something new every day. Some achieved impressive results in school competitions, including one student who won a gold medal.",
+      "I started teaching Rubik’s cube classes both online and in person. Starting with just ten students, my classes gradually expanded to reach hundreds of children all over Vietnam. What made me happiest was not the growing popularity of my classes, but the changes I saw among my students. Many parents messaged me to express gratitude, saying their children were no longer hooked on their phones, had a more meaningful summer, and were motivated to learn something new every day. Some achieved impressive results in school competitions, including one student who won a gold medal.",
       "Inspired by these changes, I redirected my focus to those children who do not have the same opportunities, particularly orphans. Together with friends who shared my vision, I established a volunteer group with an initial goal of donating Rubik’s cubes and providing free guidance at all 17 SOS Children’s Villages across Vietnam.",
       "After achieving that goal, we continued visiting shelters, social protection centers, and remote schools. Each visit brought smiles and excitement as children discovered the joy of solving their first cubes. To date, our journey has taken us through 51 provinces and cities across Vietnam. We have donated thousands of Rubik’s cubes and taught thousands of children to solve them for free.",
       "Beyond teaching algorithms, I hope to give children even more opportunities to explore, challenge themselves, and experience the satisfaction of overcoming difficulties. Seeing how they gain confidence reminds me why I started this journey and motivates me to keep sharing what I love.",
       "Looking back, I realize that my greatest achievement is not solving the most complicated puzzles, but using a tiny cube to connect with people, inspire children, and bring joy to communities that need it most.",
-      "Therefore, I will continue this journey, teaching online and offline Rubik's classes, bringing Rubik's cubes to more regions, so that more and more children across Vietnam can nurture curiosity, perseverance, and the belief that: as long as you don't give up, no matter how tangled things get, there will always be a way to find the solution.",
+      "Therefore, I will continue this journey, teaching Rubik's cube classes online and in person, bringing Rubik's cubes to more regions, so that more and more children across Vietnam can nurture curiosity, perseverance, and the belief that as long as you don't give up, no matter how tangled things get, there will always be a way to find the solution.",
     ]
   },
   timer: {
     title: "Rubik Timer",
-    guideTitle: "How to operate",
+    guideTitle: "How to Use the Timer",
     guideComputer: "Computer:",
     guideComputerDesc: "Hold the Space key to prepare, release to start. Press again to stop. Press once more to clear the time.",
     guidePhone: "Phone:",
@@ -60,7 +60,7 @@ export const en = {
     cancelBtn: "Cancel",
     deleteThis: "Delete this solve",
     stoppedHint: "Press Space / Tap to clear result",
-    idleHint: "Press Space / Hold touch to ready"
+    idleHint: "Hold Space / Touch and hold to prepare"
   },
   simulator: {
     historyLog: "History Log",
@@ -76,7 +76,7 @@ export const en = {
     roadmapTitle: "6-Step Roadmap",
     roadmapSubtitle: "Guide for beginners",
     partLabel: "Part",
-    formulaLabel: "Optimal Formula",
+    formulaLabel: "Algorithm",
     interaction3D: "3D Interaction",
     steps: [
       {
@@ -153,7 +153,7 @@ export const en = {
               {
                 id: 1,
                 title: "Case 1: Dot",
-                content: "Only the yellow center piece is yellow."
+                content: "The center is yellow, but none of the edge pieces have yellow facing up. Ignore the corner pieces."
               },
               {
                 id: 2,
@@ -175,7 +175,7 @@ export const en = {
         subSteps: [
           {
             title: "Complete the Yellow Face",
-            content: "Use only 1 formula for all 7 cases to orient all yellow corners upwards. Note the orientation of the Rubik's cube before turning so that the yellow pieces match the simulation.",
+            content: "Use a single algorithm for all 7 cases to orient all yellow corners upwards. Note the orientation of the Rubik's cube before turning so that the yellow pieces match the simulation.",
             cases: [
               {
                 id: 1,
@@ -227,12 +227,12 @@ export const en = {
               {
                 id: 1,
                 title: "Case 1:",
-                content: "2 correct corners are adjacent to each other. Place that face on the left side and perform the following formula:"
+                content: "2 correct corners are adjacent to each other. Place that face on the left side and perform the following algorithm:"
               },
               {
                 id: 2,
                 title: "Case 2:",
-                content: "2 correct corners are diagonally opposite. Select a face with 1 correct edge and 1 correct corner, place it facing you, and perform the following formula to lead to **Case 1**"
+                content: "2 correct corners are diagonally opposite. Select a face with 1 correct edge and 1 correct corner, place it facing you, and perform the following algorithm to lead to **Case 1**"
               }
             ]
           },
@@ -253,7 +253,7 @@ export const en = {
               {
                 id: 3,
                 title: "Case 3",
-                content: "No completed faces. Use the formula from Case 1 or Case 2 to lead to **Case 1** or **Case 2**."
+                content: "No completed faces. Use the algorithm from Case 1 or Case 2 to lead to **Case 1** or **Case 2**."
               }
             ]
           }
